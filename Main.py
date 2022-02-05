@@ -100,7 +100,7 @@ x0 = np.concatenate((np.transpose(solver.bodies[1].xyz_global_center), np.transp
 #x0 = np.concatenate((x0,np.zeros([1,6*solver.tnb])), axis = 1)
 x0 = np.concatenate((x0,np.zeros([1,6])), axis = 1)
 x0 = np.array(x0) 
-print(solver.bodies[1].p)
+#print(solver.bodies[1].p)
 x = integrate.solve_ivp(solver.solveSys, tspan, x0[0], method='RK45',t_eval = tmr)
 
 
@@ -113,24 +113,49 @@ N = 4 # Meshsize
 fps = 10 # frame per sec
 frn = 50 # frame number of the animation
 xx, yy = np.meshgrid((-.5,.5), (-.5,.5))
-z = np.ones((2,2))#np.zeros((2,2))
+z = np.zeros((2,2))
 y = np.zeros((N, N))
+
+xxx, yyy = np.meshgrid((0.0,0.0), (0.0,0.0))
+zz = np.zeros((2,2))
 
 # plot 
 plt.style.use('dark_background')
 
 
-def getDataFromSim(frame_number,xx,yy,z):
-    xn = np.cos(0.05*frame_number)*xx-np.sin(0.05*frame_number)*yy
-    yn = np.sin(0.05*frame_number)*xx+np.cos(0.05*frame_number)*yy
-    zn = z
+def getDataFromSim(frame_number,xx,yy,z,body1):
+    x_anim =  np.transpose(np.matrix(x.y[:,frame_number]))
+    posi = np.matrix([[0.0],[0.0],[0.0]])
+    #print(x_anim)
+    body1.BC_trans(x_anim[0:3,0],
+                    x_anim[3:7,0])
+    
+    for j in range( 0,np.size(xx,0)):
+          for jj in range( 0,np.size(xx,1)):
+              posi[0,0] = xx[j,jj]
+              posi[1,0] = yy[j,jj]
+              posi[2,0] = z[j, jj]
+              Rposi = np.matmul(body1.A, posi)
+              xxx[j,jj] = Rposi[0,0]
+              yyy[j,jj] = Rposi[1,0]
+              zz [j, jj] = Rposi[2,0]
+
+    xn = xxx
+    yn = yyy
+    zn = zz
+    #xn = np.cos(0.05*frame_number)*xx-np.sin(0.05*frame_number)*yy
+    #yn = np.sin(0.05*frame_number)*xx+np.cos(0.05*frame_number)*yy
+    #zn = z
+
+    
+    #transGraphics = 
     return xn, yn, zn
 
 
 def animate(frame_number,y,plot):
     plot[0][0].remove()
     #plot[1][0].remove()
-    xn, yn, zn = getDataFromSim(frame_number,xx,yy,z)
+    xn, yn, zn = getDataFromSim(frame_number,xx,yy,z,body1)
     #xn = np.cos(0.05*frame_number)*xx-np.sin(0.05*frame_number)*yy
     #yn = np.sin(0.05*frame_number)*xx+np.cos(0.05*frame_number)*yy
     #zn = z
