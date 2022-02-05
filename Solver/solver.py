@@ -91,7 +91,7 @@ def solveSys(t,x):
 
 
     xdot = np.array(xdot)
-    print(p)
+    print(x[0,3:7])
     return xdot[0]
 
 def forces(x,t,bodies):
