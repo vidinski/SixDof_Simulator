@@ -27,9 +27,9 @@ solver.bodies = []
 go = []
 #Solver.solver.tnb = 1
 solver.tnb = 1
-dt = 0.01
+dt = 0.1
 
-tspan = [0., 1.0]
+tspan = [0., 5.0]
 tmr = np.arange(0.0, tspan[1], dt)
 
 ###########################################################################################
@@ -108,10 +108,13 @@ x = integrate.solve_ivp(solver.solveSys, tspan, x0[0], method='RK45',t_eval = tm
 ###########################################################################################
 					#ANIMATION
 ###########################################################################################
+# Set up formatting for the movie files
+Writer = animation.writers['ffmpeg']
+writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
 
 N = 4 # Meshsize
-fps = 10 # frame per sec
-frn = 50 # frame number of the animation
+fps = 100 # frame per sec
+frn = np.arange(1, len(np.transpose(x.y))) # frame number length of the animation
 xx, yy = np.meshgrid((-.5,.5), (-.5,.5))
 z = np.zeros((2,2))
 y = np.zeros((N, N))
@@ -121,6 +124,7 @@ zz = np.zeros((2,2))
 
 # plot 
 plt.style.use('dark_background')
+time_template = 'time = %.1fs'
 
 
 def getDataFromSim(frame_number,xx,yy,z,body1):
@@ -153,6 +157,7 @@ def getDataFromSim(frame_number,xx,yy,z,body1):
 
 
 def animate(frame_number,y,plot):
+    time_text.set_text(time_template % (frame_number*dt))
     plot[0][0].remove()
     #plot[1][0].remove()
     xn, yn, zn = getDataFromSim(frame_number,xx,yy,z,body1)
@@ -164,6 +169,7 @@ def animate(frame_number,y,plot):
 
 
 fig = plt.figure()
+
 ax = fig.add_subplot(111, projection='3d')
 ax.set_xlim3d(-2, 2)
 ax.set_ylim3d(-2, 2)
@@ -172,11 +178,16 @@ ax.w_xaxis.set_pane_color((0.0, 0.0, 0.0, 1.0))
 ax.w_yaxis.set_pane_color((0.0, 0.0, 0.0, 1.0))
 ax.w_zaxis.set_pane_color((0.0, 0.0, 0.0, 1.0))
 ax.grid(b='on')
+time_text = ax.text(0.05, 0.9, 0.9, '', transform=ax.transAxes)
+plt.xlabel('X')
+plt.ylabel('Y')
+#plt.zlabel('Z')
+
 
 plot = []
 plot1 = [ax.plot_surface(xx, yy, z, color='magenta')]; 
 plot.append(plot1)
-ani = animation.FuncAnimation(fig, animate, frn, fargs=(y,plot), interval=1000/fps)
+ani = animation.FuncAnimation(fig, animate, frn, fargs=(y,plot), interval = 1) #interval=1000/fps)
 
 plt.show()
 

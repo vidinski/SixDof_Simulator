@@ -41,7 +41,7 @@ def solveSys(t,x):
 
     #solver for acclerations
     F = np.matrix([[1.0],[0.0],[0.0]])
-    T = np.matrix([[1.0],[10.0],[0.0]])
+    T = np.matrix([[0.0],[0.0],[10.0]])
 
     #_______________________________________________________________________
     #Solve for X DOT: 
@@ -91,7 +91,7 @@ def solveSys(t,x):
 
 
     xdot = np.array(xdot)
-    print(x[0,3:7])
+    print(w)
     return xdot[0]
 
 def forces(x,t,bodies):
