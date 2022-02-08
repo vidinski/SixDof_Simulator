@@ -50,15 +50,16 @@ def solveSys(t,x):
     #_______________________________________________________________________
     sd = np.matmul(np.eye(3),sd)
     #_______________________________________________________________________
-    #quaternions
+    #quaternions https://ahrs.readthedocs.io/en/latest/filters/angular.html
     #_______________________________________________________________________     
     #pdot = 0.5*[wtild, w; 0, -wT]*q #quaternion
     #pd = np.matmul(np.eye(4),p)  
     wmt = np.matrix(np.transpose(w))
     wtild = skewsym(w) 
     wm = np.matrix(w)
-    pM1 = np.concatenate((wtild, wm), axis = 1)
-    pM2 = np.concatenate(([[0]], -wmt), axis = 1)
+    #pM1 = np.concatenate((wtild, wm), axis = 1)
+    pM2 = np.concatenate((wm, wtild), axis = 1)
+    pM1 = np.concatenate(([[0]], -wmt), axis = 1)
     pM = np.concatenate((pM1,pM2), axis = 0)
     pM = 0.5*pM
     pd = np.matmul(pM,p)  
@@ -91,7 +92,7 @@ def solveSys(t,x):
 
 
     xdot = np.array(xdot)
-    print(w)
+    print(p)
     return xdot[0]
 
 def forces(x,t,bodies):
