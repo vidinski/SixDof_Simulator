@@ -2,9 +2,11 @@ import numpy as np
 #from scipy.integrate import odeint
 #from body_coordinates import body_coordinates #, BC_constraints, joints
 from Kinematics.body_coordinates import body_coordinates, skewsym
+
 #import frconbod
 
 global bodies
+global forces
 #global K
 global tnb
 #global joint_list
@@ -40,7 +42,7 @@ def solveSys(t,x):
     #_______________________________________________________________________
 
     #solver for acclerations
-    F = np.matrix([[1.0],[0.0],[0.0]])
+    F = forces[0].force_direction #np.matrix([[1.0],[0.0],[0.0]])
     T = np.matrix([[0.0],[0.0],[10.0]])
 
     #_______________________________________________________________________
@@ -92,7 +94,7 @@ def solveSys(t,x):
 
 
     xdot = np.array(xdot)
-    print(p)
+    print(s[2,0])
     return xdot[0]
 
 def forces(x,t,bodies):

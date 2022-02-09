@@ -6,7 +6,8 @@ import matplotlib.animation as animation
 import matplotlib.patches as patches
 import scipy.integrate as integrate
 from Solver import solver 
-import Dynamics
+from Dynamics import ForcesTypes
+#import Dynamics
 from Kinematics.body_coordinates import body_coordinates
 #import Kinematics.body_coordinates #import body_coordinates as body_coordinates #, BC_constraints, joints
 #from body_coordinates import body_coordinates #as BC #, BC_constraints, joints
@@ -24,6 +25,7 @@ import matplotlib.animation as animation
 
 PI = np.pi; cos45 = np.cos(PI/4.)
 solver.bodies = []
+solver.forces = []
 go = []
 #Solver.solver.tnb = 1
 solver.tnb = 1
@@ -68,11 +70,12 @@ solver.bodies.append(body1)
 #print(body1.Mstar)
 
 ###########################################################################################
-					#SETUP ANIMATION WINDOW
+					#SETUP FORCES
 ###########################################################################################
+force0 = ForcesTypes.GravityForce(0, #index
+                              [[0.0],[0.0],[-9.81]]) #force direction
 
-
-
+solver.forces.append(force0)
 ###########################################################################################
 					#SETUP JOINTS
 ###########################################################################################
