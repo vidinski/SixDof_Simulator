@@ -1,8 +1,8 @@
 import numpy as np
 #from scipy.integrate import odeint
 #from body_coordinates import body_coordinates #, BC_constraints, joints
-from Kinematics.body_coordinates import body_coordinates, skewsym
-
+from Kinematics.body_coordinates import body_coordinates #, skewsym
+from Kinematics.kinematics import skewsym
 #import frconbod
 
 global bodies

@@ -1,5 +1,5 @@
 import numpy as np 
-
+import Kinematics.kinematics as kine
 
 class body_coordinates():
     def __init__(self, 	index = 0, 
@@ -27,30 +27,7 @@ class body_coordinates():
     def BC_trans(self, new_position, new_p):
         self.p = new_p
         self.xyz_global_center = new_position
-        self.A = p2A(self.p)
+        self.A = kine.p2A(self.p)
         #self.xyz_global_shape = self.xyz_global_center + np.matmul(self.A,self.xyz_local_shape)
         #self.xyz_global_unit = np.matmul(self.A, self.xyz_local_unit)
         #self.xyz_global_joints = np.matmul(self.A,self.xyz_local_joints)  
-    
-def p2A(p):
-        e = p[1:4,0]
-        e0 = p[0,0]
-        etild = skewsym(e)
-        G1 = -e
-        G2 = -etild+e0*np.eye(3)
-        L1 = -e
-        L2 = etild+e0*np.eye(3)
-        G = np.concatenate((G1,G2),axis=1)
-        L = np.concatenate((L1,L2),axis=1)
-        A = np.matmul(G,np.transpose(L))
-        return A #, G, L 
-
-
-def skewsym(vec): 
-	# make skew symmetric matrix from a 3D vector
-	skewmat = np.matrix([[0.0,-vec[2,0],vec[1,0]],[vec[2,0],0.0,-vec[0,0]],[-vec[1,0],vec[0,0],0.0]])
-	return skewmat
-# p = [e0, e]; e0 = cos(phi/2); e = sin(phi/2)*u_rot 
-# G = [-e, -etild+e0*I]
-# L = [-e,  etild+e0*I]
-# A = G*L'
