@@ -76,6 +76,10 @@ force0 = ForcesTypes.GravityForce(0, #index
                               [[0.0],[0.0],[-9.81]]) #force direction
 
 solver.forces.append(force0)
+
+force1 = ForcesTypes.AppliedForce(1,  #index
+                                  0.0) #time
+solver.forces.append(force1)
 ###########################################################################################
 					#SETUP JOINTS
 ###########################################################################################
@@ -188,8 +192,16 @@ plt.ylabel('Y')
 
 
 plot = []
-plot1 = [ax.plot_surface(xx, yy, z, color='magenta')]; 
+plot1 = [ax.plot_surface(xx, yy, z, color='magenta')]
 plot.append(plot1)
+plot2 = [ax.scatter(1.0,1.0,1.0,
+                    marker = "o", 
+                    c = "red",
+                    s = 200)] 
+                 #markeredgecolor = "red",
+                 #markerfacecolor = "red")]
+plot.append(plot2)
+
 ani = animation.FuncAnimation(fig, animate, frn, fargs=(y,plot), interval = 1) #interval=1000/fps)
 
 plt.show()
