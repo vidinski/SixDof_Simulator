@@ -164,14 +164,22 @@ def getDataFromSim(frame_number,xx,yy,z,body1):
 
 
 def animate(frame_number,y,plot):
+    #force1.BC_trans()
     time_text.set_text(time_template % (frame_number*dt))
     plot[0][0].remove()
+    plot[1][0].remove()
     #plot[1][0].remove()
     xn, yn, zn = getDataFromSim(frame_number,xx,yy,z,body1)
     #xn = np.cos(0.05*frame_number)*xx-np.sin(0.05*frame_number)*yy
     #yn = np.sin(0.05*frame_number)*xx+np.cos(0.05*frame_number)*yy
     #zn = z
     plot[0][0]= ax.plot_surface(xn, yn, zn, color='magenta')
+    plot[1][0] = [ax.scatter(1.0,
+                             1.0,
+                             1.0,
+                             marker = "o", 
+                             c = "red",
+                             s = 200)] 
 
 
 

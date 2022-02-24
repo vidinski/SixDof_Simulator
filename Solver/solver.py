@@ -42,8 +42,9 @@ def solveSys(t,x):
     #_______________________________________________________________________
 
     #solver for acclerations
+    bodies[1].BC_trans(s,p)
+    forces[1].Update(t,bodies[1].A)
     F = forces[0].force_direction + forces[1].force_global #np.matrix([[1.0],[0.0],[0.0]])
-    forces[1].Update(t,bodies[1].BC_trans(s,p))
     T = forces[1].torque_body #np.matrix([[0.0],[0.0],[10.0]])
 
     #_______________________________________________________________________
@@ -95,7 +96,7 @@ def solveSys(t,x):
 
 
     xdot = np.array(xdot)
-    print(s[2,0])
+    print(forces[1].force_global)
     return xdot[0]
 
 def forces(x,t,bodies):
