@@ -141,6 +141,10 @@ def getDataFromSim(frame_number,xx,yy,z,body1):
     body1.BC_trans(x_anim[0:3,0],
                     x_anim[3:7,0])
     
+    #Force graphics
+    force1.Update(frame_number*dt, body1.A)    
+
+    #body graphics  
     for j in range( 0,np.size(xx,0)):
           for jj in range( 0,np.size(xx,1)):
               posi[0,0] = xx[j,jj]
@@ -154,29 +158,28 @@ def getDataFromSim(frame_number,xx,yy,z,body1):
     xn = xxx
     yn = yyy
     zn = zz
+    fp = force1.position_global
     #xn = np.cos(0.05*frame_number)*xx-np.sin(0.05*frame_number)*yy
     #yn = np.sin(0.05*frame_number)*xx+np.cos(0.05*frame_number)*yy
     #zn = z
 
     
     #transGraphics = 
-    return xn, yn, zn
+    return xn, yn, zn, fp
 
 
 def animate(frame_number,y,plot):
-    #force1.BC_trans()
     time_text.set_text(time_template % (frame_number*dt))
     plot[0][0].remove()
-    plot[1][0].remove()
     #plot[1][0].remove()
-    xn, yn, zn = getDataFromSim(frame_number,xx,yy,z,body1)
+    xn, yn, zn, fp = getDataFromSim(frame_number,xx,yy,z,body1)
     #xn = np.cos(0.05*frame_number)*xx-np.sin(0.05*frame_number)*yy
     #yn = np.sin(0.05*frame_number)*xx+np.cos(0.05*frame_number)*yy
     #zn = z
     plot[0][0]= ax.plot_surface(xn, yn, zn, color='magenta')
-    plot[1][0] = [ax.scatter(1.0,
-                             1.0,
-                             1.0,
+    plot[1][0] = [ax.scatter(fp[0,0],
+                             fp[1,0],
+                             fp[2,0],
                              marker = "o", 
                              c = "red",
                              s = 200)] 
