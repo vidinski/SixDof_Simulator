@@ -20,9 +20,9 @@ class AppliedForce():
                                       
         def Update(self, new_time, A):
             self.t = new_time
-            self.position_body = np.matrix([[self.t], [self.t],[0.0]])
-            self.force_mag = self.t
+            self.position_body = np.matrix([[0.1*self.t], [0.1*self.t],[0.1]])
+            self.force_mag = 10.0*self.t
             self.force_body = self.force_mag*self.dir_body
             self.torque_body = np.matmul(kine.skewsym(self.position_body),self.force_mag*self.dir_body)
             self.force_global = np.matmul(A, self.force_body)
-            self.position_global = np.matmul(A,np.matrix([[self.t], [self.t],[0.0]]))
+            self.position_global = np.matmul(A,self.position_body)
