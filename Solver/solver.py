@@ -45,7 +45,7 @@ def solveSys(t,x):
     bodies[1].BC_trans(s,p)
     forces[1].Update(t,bodies[1].A)
     F = forces[0].force_direction + forces[1].force_global #np.matrix([[1.0],[0.0],[0.0]])
-    T = forces[1].torque_body #np.matrix([[0.0],[0.0],[10.0]])
+    T = forces[1].torque_body #np.matrix([[0.0],[0.0],[10.0]])  
 
     #_______________________________________________________________________
     #Solve for X DOT: 
@@ -96,7 +96,8 @@ def solveSys(t,x):
 
 
     xdot = np.array(xdot)
-    print(forces[1].force_global)
+    #print(forces[1].force_global)
+    print(s[0,0])
     return xdot[0]
 
 def forces(x,t,bodies):

@@ -20,7 +20,7 @@ class AppliedForce():
                                       
         def Update(self, new_time, A):
             self.t = new_time
-            self.position_body = np.matrix([[0.1*self.t], [0.1*self.t],[0.1]])
+            self.position_body = np.matrix([[0.1*self.t], [0.1*self.t],[0.01]])
             self.force_mag = -10.0*self.t
             self.force_body = self.force_mag*self.dir_body
             self.torque_body = np.matmul(kine.skewsym(self.position_body),self.force_mag*self.dir_body)
@@ -30,7 +30,7 @@ class AppliedForce():
 class SpringForce(): 
         def __init__(self, index = 0):
             self.loc_body = np.matrix([[0.0], [0.0],[0.0]])
-	    self.loc_ground = np.matrix([[0.0], [0.0],[0.0]])
+            self.loc_ground = np.matrix([[0.0], [0.0],[0.0]])
             self.force_body =  np.matrix([[0.0], [0.0],[0.0]])
             self.torque_body =  np.matrix([[0.0], [0.0],[0.0]])
             self.force_global = np.matrix([[0.0], [0.0],[0.0]])

@@ -151,9 +151,9 @@ def getDataFromSim(frame_number,xx,yy,z,body1):
               posi[1,0] = yy[j,jj]
               posi[2,0] = z[j, jj]
               Rposi = np.matmul(body1.A, posi)
-              xxx[j,jj] = Rposi[0,0]
-              yyy[j,jj] = Rposi[1,0]
-              zz [j, jj] = Rposi[2,0]
+              xxx[j,jj] = Rposi[0,0]+body1.xyz_global_center[0,0] 
+              yyy[j,jj] = Rposi[1,0]+body1.xyz_global_center[1,0]
+              zz [j, jj] = Rposi[2,0]+body1.xyz_global_center[2,0]
 
     xn = xxx
     yn = yyy
@@ -176,15 +176,13 @@ def animate(frame_number,y,plot):
     #xn = np.cos(0.05*frame_number)*xx-np.sin(0.05*frame_number)*yy
     #yn = np.sin(0.05*frame_number)*xx+np.cos(0.05*frame_number)*yy
     #zn = z
-    plot[0][0]= ax.plot_surface(xn, yn, zn, color='magenta')
     plot[1][0] = ax.scatter(fp[0,0],
-                             fp[1,0],
-                             fp[2,0],
-                             marker = "o", 
-                             c = "white",
-                             s = 200) 
-
-
+                            fp[1,0],
+                            fp[2,0],
+                            marker = "o",
+                            c = "white",
+                            s = 200) 
+    plot[0][0]= ax.plot_surface(xn, yn, zn, color='magenta')
 
 fig = plt.figure()
 
