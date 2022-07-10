@@ -41,11 +41,18 @@ def solveSys(t,x):
     #Joint Constraints Jacobian: 
     #_______________________________________________________________________
 
+   #_______________________________________________________________________
     #solver for acclerations
+    #_______________________________________________________________________
+    F = np.matrix([[0.0],[0.0],[0.0]]) #forces[0].force_direction + forces[1].force_global #np.matrix([[1.0],[0.0],[0.0]])
+    T = np.matrix([[0.0],[0.0],[0.0]]) #forces[1].torque_body
     bodies[1].BC_trans(s,p)
-    forces[1].Update(t,bodies[1].A)
-    F = forces[0].force_direction + forces[1].force_global #np.matrix([[1.0],[0.0],[0.0]])
-    T = forces[1].torque_body #np.matrix([[0.0],[0.0],[10.0]])  
+    #forces[1].Update(t,bodies[1].A, bodies[1].xyz_global_center)
+    # forces[1].UpdateBasic(bodies[1])
+    
+    for frc in forces:
+        F = F+frc.force_global
+        T = T+frc.torque_body
 
     #_______________________________________________________________________
     #Solve for X DOT: 

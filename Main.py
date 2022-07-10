@@ -72,14 +72,23 @@ solver.bodies.append(body1)
 ###########################################################################################
 					#SETUP FORCES
 ###########################################################################################
+#
+index = -1
+index = index + 1
 force0 = ForcesTypes.GravityForce(0, #index
                               [[0.0],[0.0],[-9.81]]) #force direction
-
 solver.forces.append(force0)
 
-force1 = ForcesTypes.AppliedForce(1,  #index
-                                  0.0) #time
-solver.forces.append(force1)
+#force1 = ForcesTypes.AppliedForce(1,  #index
+#                                  0.0) #time
+# force1 =  ForcesTypes.ContactForce(index,  #index
+#                                    position_body, #position of contact point
+#                                    u_ground, #u ground 
+#                                    spring_constant, #spring constant
+#                                    damping) #damping 
+
+# solver.forces.append(force1)
+
 ###########################################################################################
 					#SETUP JOINTS
 ###########################################################################################
@@ -142,7 +151,7 @@ def getDataFromSim(frame_number,xx,yy,z,body1):
                     x_anim[3:7,0])
     
     #Force graphics
-    force1.Update(frame_number*dt, body1.A)    
+    #force1.Update(frame_number*dt, body1.A, body1.xyz_global_center)    
 
     #body graphics  
     for j in range( 0,np.size(xx,0)):
@@ -158,7 +167,8 @@ def getDataFromSim(frame_number,xx,yy,z,body1):
     xn = xxx
     yn = yyy
     zn = zz
-    fp = force1.position_global
+    fp  = np.matrix([[0.0], [0.0],[0.0]]) 
+    #fp = force1.position_global
     #xn = np.cos(0.05*frame_number)*xx-np.sin(0.05*frame_number)*yy
     #yn = np.sin(0.05*frame_number)*xx+np.cos(0.05*frame_number)*yy
     #zn = z
@@ -175,14 +185,14 @@ def animate(frame_number,y,plot):
     xn, yn, zn, fp = getDataFromSim(frame_number,xx,yy,z,body1)
     #xn = np.cos(0.05*frame_number)*xx-np.sin(0.05*frame_number)*yy
     #yn = np.sin(0.05*frame_number)*xx+np.cos(0.05*frame_number)*yy
-    #zn = z
+    #zn = z 
+    plot[0][0]= ax.plot_surface(xn, yn, zn, color='magenta')
     plot[1][0] = ax.scatter(fp[0,0],
                             fp[1,0],
                             fp[2,0],
                             marker = "o",
                             c = "white",
-                            s = 200) 
-    plot[0][0]= ax.plot_surface(xn, yn, zn, color='magenta')
+                            s = 200)
 
 fig = plt.figure()
 
@@ -210,6 +220,11 @@ plot2 = [ax.scatter(1.0,1.0,1.0,
                  #markeredgecolor = "red",
                  #markerfacecolor = "red")]
 plot.append(plot2)
+
+forcevec = [0.0,0.0,1.0]; 
+plot3 = ax.plot3D([0.0,0.0],[0.0, 0.0],[0.0,1.0],'orange')
+
+plot.append(plot3); 
 
 ani = animation.FuncAnimation(fig, animate, frn, fargs=(y,plot), interval = 1) #interval=1000/fps)
 
