@@ -47,7 +47,7 @@ def solveSys(t,x):
     F = np.matrix([[0.0],[0.0],[0.0]]) #forces[0].force_direction + forces[1].force_global #np.matrix([[1.0],[0.0],[0.0]])
     T = np.matrix([[0.0],[0.0],[0.0]]) #forces[1].torque_body
     bodies[1].BC_trans(s,p)
-    #forces[1].Update(t,bodies[1].A, bodies[1].xyz_global_center)
+    forces[1].UpdateContact(bodies[1], sd, w)
     # forces[1].UpdateBasic(bodies[1])
     
     for frc in forces:
@@ -104,7 +104,7 @@ def solveSys(t,x):
 
     xdot = np.array(xdot)
     #print(forces[1].force_global)
-    print(s[0,0])
+    #print(forces[1].disp)
     return xdot[0]
 
 def forces(x,t,bodies):

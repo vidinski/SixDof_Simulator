@@ -74,20 +74,26 @@ solver.bodies.append(body1)
 ###########################################################################################
 #
 index = -1
+#
 index = index + 1
 force0 = ForcesTypes.GravityForce(0, #index
                               [[0.0],[0.0],[-9.81]]) #force direction
 solver.forces.append(force0)
 
-#force1 = ForcesTypes.AppliedForce(1,  #index
-#                                  0.0) #time
-# force1 =  ForcesTypes.ContactForce(index,  #index
-#                                    position_body, #position of contact point
-#                                    u_ground, #u ground 
-#                                    spring_constant, #spring constant
-#                                    damping) #damping 
+#
+index = index + 1
+position_on_body = np.matrix([[0.0],[0.0],[0.0]])
+u_ground = np.matrix([[0.0],[0.0],[1.0]])
+spring_constant = 100.0
+damping = 10.0
 
-# solver.forces.append(force1)
+force1 =  ForcesTypes.ContactForce(index, 
+                                    position_on_body,
+                                    u_ground, 
+                                    spring_constant, 
+                                    damping)
+
+solver.forces.append(force1)
 
 ###########################################################################################
 					#SETUP JOINTS
