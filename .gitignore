@@ -1,3 +1,4 @@
 *.pyc
 */__pycache__
 Dynamics/zForcesTypes.py
+*.mp4

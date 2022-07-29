@@ -1,6 +1,6 @@
 import numpy as np 
-#import matplotlib
-#matplotlib.use("Agg")
+# import matplotlib
+# matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import matplotlib.patches as patches
@@ -311,25 +311,13 @@ ani = animation.FuncAnimation(fig, animate, frn, fargs=(y,plot), interval = 1) #
 
 plt.show()
 
-"""
+
 # Set up formatting for the movie files
-#Writer = animation.writers['ffmpeg']
-#writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
+# Writer = animation.writers['ffmpeg']
+# writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
 
-#ani.save('test.mp4', writer=writer)
+# ani.save('test.mp4', writer=writer)
 
-############################################################################################
-fps = 10 # frame per sec
-frn = 50 # frame number of the animation
-plt.style.use('dark_background')
 
-# crnr = solver.bodies[1].center + np.matmul(solver.bodies[1].A,solver.bodies[1].shape
-
-xx, yy = np.meshgrid((-.5,.5), (-.5,.5)) #Need to plug in body coordinates in here for shape
-z = np.zeros((2,2))
-
-print(xx)
-print(yy)
-"""
 
 
