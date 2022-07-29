@@ -27,9 +27,6 @@ def solveSys(t,x):
         #state = [x, y, z, p0, p1, p2, p3, xd, yd, zd, w1, w2, w3] 
 	#state derivative = [xdd, ydd, zdd, alpha1, alpha2, alpha3] 
 	#xfromintegrator = [x, y, z, p0, p1, p2, p3, xd, yd ,zd, w1, w2, w3]
-        #q[j,:] = np.concatenate((x[0,6*j:6*j+6],x[0,6*(tnb+j):6*(tnb+j)+6]), axis = 1) #normal
-	#q[j,:] = np.concatenate((x[0,7*j:7*j+7],x[0,7*(tnb+j):7*(tnb+j)+7]), axis = 1)
-        #bodies[i].BC_trans(np.transpose(q[j,0:3]), np.transpose(q[j,3:7]))
 
     s =  np.transpose(x[0,0:3])
     p =  np.transpose(x[0,3:7])
@@ -44,12 +41,15 @@ def solveSys(t,x):
    #_______________________________________________________________________
     #solver for acclerations
     #_______________________________________________________________________
-    F = np.matrix([[0.0],[0.0],[0.0]]) #forces[0].force_direction + forces[1].force_global #np.matrix([[1.0],[0.0],[0.0]])
-    T = np.matrix([[0.0],[0.0],[0.0]]) #forces[1].torque_body
+    F = np.matrix([[0.0],[0.0],[0.0]]) 
+    T = np.matrix([[0.0],[0.0],[0.0]])
     bodies[1].BC_trans(s,p)
-    forces[1].UpdateContact(bodies[1], sd, w)
-    # forces[1].UpdateBasic(bodies[1])
     
+    for i in range(1,5):
+        forces[i].UpdateContact(bodies[1], sd, w)
+    
+    #F = forces[0].force_global + forces[1].force_global + forces[2].force_global + forces[3].force_global + forces[4].force_global
+    #T = forces[0].torque_body + forces[1].torque_body + forces[2].torque_body + forces[3].torque_body + forces[4].torque_body
     for frc in forces:
         F = F+frc.force_global
         T = T+frc.torque_body
@@ -63,8 +63,6 @@ def solveSys(t,x):
     #_______________________________________________________________________
     #quaternions https://ahrs.readthedocs.io/en/latest/filters/angular.html
     #_______________________________________________________________________     
-    #pdot = 0.5*[wtild, w; 0, -wT]*q #quaternion
-    #pd = np.matmul(np.eye(4),p)  
     wmt = np.matrix(np.transpose(w))
     wtild = skewsym(w) 
     wm = np.matrix(w)
@@ -90,25 +88,8 @@ def solveSys(t,x):
     qdot = np.concatenate((np.transpose(sd),np.transpose(pd)), axis=1)
     xdot = np.concatenate((qdot,qdoubledot),axis = 1 )
 
-    #_______________________________________________________________________	
-    #qdoubledotaccel = np.transpose(qdoubledotaccel)
-    #qdoubledotalpha = np.transpose(qdoubledotalpha)
-    #qdoubledot = np.concatenate((qdoubledotaccel,qdoubledotalpha), axis=1)
-    #extract velocities: 
-    #xyth_vel = x[0,tnb*9:tnb*18]
-    #xyth_vel = x[0,tnb*6:tnb*12]
-    #qdoubledot = np.transpose(qdoubledot)
-    #xdot = np.concatenate((xyth_vel,qdoubledot),axis = 1 )  
-    #_______________________________________________________________________ 
-
-
     xdot = np.array(xdot)
-    #print(forces[1].force_global)
-    #print(forces[1].disp)
     return xdot[0]
-
-def forces(x,t,bodies):
-    return F
   
 
 

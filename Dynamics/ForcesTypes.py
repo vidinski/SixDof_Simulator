@@ -39,7 +39,6 @@ class ContactForce(ForceBase):
                 self.force_global = np.matmul(self.u_ground,self.force_mag)
                 self.force_body = np.matmul(np.transpose(self.A), self.force_global)
                 self.torque_body =  np.matmul(kine.skewsym(self.position_on_body),self.force_body)            
-                print(self.force_body)
             else: 
                 self.force_global = np.matrix([[0.0], [0.0],[0.0]]) 
                 self.force_body = np.matrix([[0.0], [0.0],[0.0]])

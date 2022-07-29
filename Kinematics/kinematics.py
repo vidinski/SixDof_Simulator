@@ -15,6 +15,6 @@ def p2A(p):
         L2 = etild+e0*np.eye(3)
         G = np.concatenate((G1,G2),axis=1)
         L = np.concatenate((L1,L2),axis=1)
-        A = np.matmul(G,np.transpose(L))
+        A = np.transpose(np.matmul(G,np.transpose(L)))
         return A #, G, L
 
