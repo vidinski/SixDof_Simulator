@@ -3,14 +3,10 @@ import numpy as np
 #from body_coordinates import body_coordinates #, BC_constraints, joints
 from Kinematics.body_coordinates import body_coordinates #, skewsym
 from Kinematics.kinematics import skewsym
-#import frconbod
 
 global bodies
 global forces
-#global K
 global tnb
-#global joint_list
-#global ground0true
 
 g = 9.81
 PI = np.pi
@@ -32,6 +28,8 @@ def solveSys(t,x):
     p =  np.transpose(x[0,3:7])
     sd = np.transpose(x[0,7:10])
     w =  np.transpose(x[0,10:13])   
+    #thrust = np.transpose(x[0,13:14])
+    thrust =1.0
 
     #_______________________________________________________________________
 
@@ -47,9 +45,13 @@ def solveSys(t,x):
     
     for i in range(1,5):
         forces[i].UpdateContact(bodies[1], sd, w)
+    if (t > 1.0):
+        thrust_cmd = 15.0
+    else:
+        thrust_cmd = 0.0 
+    for i in range(5,6):
+        forces[i].UpdatePropulsion(bodies[1], thrust)
     
-    #F = forces[0].force_global + forces[1].force_global + forces[2].force_global + forces[3].force_global + forces[4].force_global
-    #T = forces[0].torque_body + forces[1].torque_body + forces[2].torque_body + forces[3].torque_body + forces[4].torque_body
     for frc in forces:
         F = F+frc.force_global
         T = T+frc.torque_body
@@ -82,12 +84,18 @@ def solveSys(t,x):
     Iw = np.matmul(bodies[1].inertia,np.matrix(w))
     wIw = np.matmul(wtild, Iw)
     alpha = np.matmul(bodies[1].Jinv,(T-wIw))
+    #_______________________________________________________________________
+    #thrust force lag
+    #_______________________________________________________________________
+    thrust_dot = np.matrix([[1/forces[5].tau*(thrust - thrust_cmd)]])
 
     #package them up
     qdoubledot = np.concatenate((np.transpose(sdd),np.transpose(alpha)), axis=1)
     qdot = np.concatenate((np.transpose(sd),np.transpose(pd)), axis=1)
-    xdot = np.concatenate((qdot,qdoubledot),axis = 1 )
-
+    xdot = np.concatenate((qdot,qdoubledot),axis = 1 ) 
+    #add subsystems: 
+    #xdot = np.concatenate((xdot,thrust_dot), axis = 1)
+    #send array back to solver
     xdot = np.array(xdot)
     return xdot[0]
   

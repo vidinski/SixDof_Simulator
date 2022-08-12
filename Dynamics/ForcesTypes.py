@@ -1,5 +1,6 @@
 import numpy as np
 import Kinematics.kinematics as kine
+import Dynamics.Controllers
 from Kinematics.body_coordinates import body_coordinates
 
 class ForceBase(): 
@@ -43,7 +44,21 @@ class ContactForce(ForceBase):
                 self.force_global = np.matrix([[0.0], [0.0],[0.0]]) 
                 self.force_body = np.matrix([[0.0], [0.0],[0.0]])
                 self.torque_body = np.matrix([[0.0], [0.0],[0.0]])
+            #self.UpdateBasic(body)
+
+class PropulsionForce(ForceBase): 
+        def __init__ (self,index, position_on_body, u_propulsion, tau):
+            super().__init__(index, position_on_body)
+            self.u_propulsion = u_propulsion
+            self.tau = tau
+        def UpdatePropulsion(self, body, thrust):
+            self.cg_global = body.xyz_global_center  
+            self.A = body.A
+            self.force_mag = thrust
+            self.force_body = self.force_mag*self.u_propulsion 
             self.UpdateBasic(body)
+
+
 
 # class AppliedForce(): 
 #         def __init__(self, index = 0, 
