@@ -28,8 +28,8 @@ def solveSys(t,x):
     p =  np.transpose(x[0,3:7])
     sd = np.transpose(x[0,7:10])
     w =  np.transpose(x[0,10:13])   
-    #thrust = np.transpose(x[0,13:14])
-    thrust =1.0
+    thrust = np.transpose(x[0,13])
+    #thrust = 1.0
 
     #_______________________________________________________________________
 
@@ -45,8 +45,8 @@ def solveSys(t,x):
     
     for i in range(1,5):
         forces[i].UpdateContact(bodies[1], sd, w)
-    if (t > 1.0):
-        thrust_cmd = 15.0
+    if ((t > 1.0) & (t < 3.0)):
+        thrust_cmd = -15.0
     else:
         thrust_cmd = 0.0 
     for i in range(5,6):
@@ -87,16 +87,17 @@ def solveSys(t,x):
     #_______________________________________________________________________
     #thrust force lag
     #_______________________________________________________________________
-    thrust_dot = np.matrix([[1/forces[5].tau*(thrust - thrust_cmd)]])
+    thrust_dot = np.matrix([[1/forces[5].tau*(-thrust + thrust_cmd)]])
 
     #package them up
     qdoubledot = np.concatenate((np.transpose(sdd),np.transpose(alpha)), axis=1)
     qdot = np.concatenate((np.transpose(sd),np.transpose(pd)), axis=1)
     xdot = np.concatenate((qdot,qdoubledot),axis = 1 ) 
     #add subsystems: 
-    #xdot = np.concatenate((xdot,thrust_dot), axis = 1)
+    xdot = np.concatenate((xdot,thrust_dot), axis = 1)
     #send array back to solver
     xdot = np.array(xdot)
+    print(thrust_cmd)
     return xdot[0]
   
 

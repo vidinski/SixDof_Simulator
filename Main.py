@@ -1,5 +1,5 @@
 import numpy as np 
-#import matplotlib
+# import matplotlib
 # matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -29,7 +29,7 @@ solver.forces = []
 go = []
 #Solver.solver.tnb = 1
 solver.tnb = 1
-dt = 0.2
+dt = 0.1
 
 tspan = [0., 10.0]
 tmr = np.arange(0.0, tspan[1], dt)
@@ -156,9 +156,10 @@ x0 = np.concatenate((np.transpose(solver.bodies[1].xyz_global_center), np.transp
 x0 = np.concatenate((x0,vel0), axis = 1)
 x0 = np.concatenate((x0,np.zeros([1,3])), axis = 1)
 #add subystems initial conditions: 
-#x0 = np.concatenate((x0,np.zeros([1,1])), axis = 1)
-#x0 = np.concatenate((x0,np.zeros([1,6])), axis = 1)
-x0 = np.array(x0) 
+x0 = np.concatenate((x0,np.zeros([1,1])), axis = 1)
+#x0 = np.concatenate((x0,[[0.0]]), axis = 1)
+
+x0 = np.array(x0[0]) 
 x = integrate.solve_ivp(solver.solveSys, tspan, x0[0], method='RK45',t_eval = tmr)
 
 
@@ -185,7 +186,7 @@ zz = np.zeros((2,2))
 plt.style.use('dark_background')
 time_template = 'time = %.1fs'
 
-fig = plt.figure()
+fig = plt.figure(figsize=(16, 9), dpi=1920/16)
 ax = fig.add_subplot(121, projection='3d')
 ax.set_xlim3d(-2, 2)
 ax.set_ylim3d(-2, 2)
@@ -204,9 +205,9 @@ ax2 = fig.add_subplot(122, projection='3d')
 ax2.set_xlim3d(-2, 2)
 ax2.set_ylim3d(-2, 2)
 ax2.set_zlim3d(-2, 2)
-ax2.w_xaxis.set_pane_color((0.0, 0.0, 0.0, 1.0))
-ax2.w_yaxis.set_pane_color((0.0, 0.0, 0.0, 1.0))
-ax2.w_zaxis.set_pane_color((0.0, 0.0, 0.0, 1.0))
+ax2.w_xaxis.set_pane_color((0.1, 0.0, 0.0, 1.0))
+ax2.w_yaxis.set_pane_color((0.1, 0.0, 0.0, 1.0))
+ax2.w_zaxis.set_pane_color((0.1, 0.0, 0.0, 1.0))
 ax2.grid(b='on')
 time_text2 = ax2.text(0.05, 0.9, 0.9, '', transform=ax.transAxes)
 plt.xlabel('X')
@@ -251,9 +252,9 @@ def getThrustData(frame_number, force):
     x_anim =  np.transpose(np.matrix(x.y[:,frame_number]))
     body1.BC_trans(x_anim[0:3,0],
                     x_anim[3:7,0])
-    thrust = 1.0 #x_anim[13,0]
+    thrust = x_anim[13,0]
     force.UpdatePropulsion(body1, thrust)
-    v_thrust = -force.force_mag*1/50*force.u_propulsion
+    v_thrust = -1/5*force.force_mag*force.u_propulsion
     td = np.matrix([[0.0, 0.0,0.0],
           [0.0,0.0,0.0]])
     td[0,0:3] = np.transpose(np.matmul(body1.A,force.position_on_body)) #+ body1.xyz_global_center
@@ -288,6 +289,7 @@ def animate(frame_number,y,plot):
     plot[7][0] = ax.plot3D([ld[0,6],ld[0,7]], [ld[1,6],ld[1,7]],[ld[2,6],ld[2,7]],color=(0.9,0.9,0.9),linewidth=3)
     plot[8][0] = ax.plot3D([td[0,0],td[1,0]], [td[0,1],td[1,1]],[td[0,2],td[1,2]],'orange')
     ax2.plot3D(x.y[0,:], x.y[1,:],x.y[2,:], color=(0.5,0.5,0.9))
+    ax2.scatter(x.y[0,frame_number], x.y[1,frame_number],x.y[2,frame_number], color='red', s=100)
     #axes stuff 
     ax.set_xlim3d(-2, 2)
     ax.set_ylim3d(-2, 2)
@@ -297,10 +299,11 @@ def animate(frame_number,y,plot):
     ax.set_zlabel('Z')
     ax2.set_xlim3d(-200, 200)
     ax2.set_ylim3d(-200, 200)
-    ax2.set_zlim3d(-200, 200)
+    ax2.set_zlim3d(0.0, 400)
     ax2.set_xlabel('X')
     ax2.set_ylabel('Y')
     ax2.set_zlabel('Z')
+    
 
 ###########################################################################################
                 #DEFINE GEOMETRIC FEATURES
@@ -355,9 +358,10 @@ td = getThrustData(0, force5)
 plot8 = [ax.plot3D([td[0,0],td[1,0]], [td[0,1],td[1,1]],[td[0,2],td[1,2]],'orange')]
 plot.append(plot8)
 
-ani = animation.FuncAnimation(fig, animate, frn, fargs=(y,plot), interval = 1) #interval=1000/fps)
+plt.rcParams["figure.figsize"] = [14.00, 7.0]
+ani = animation.FuncAnimation(fig, animate, frn, fargs=(y,plot), interval = 1000/10) #interval=1000/fps)
 
-plt.show()
+#plt.show()
 
 # Set up formatting for the movie files
 # Writer = animation.writers['ffmpeg']
