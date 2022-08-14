@@ -80,18 +80,19 @@ solver.bodies.append(body1)
 #
 index = -1
 #
+#GRAVITY
 index = index + 1
 force0 = ForcesTypes.GravityForce(0, #index
                               [[0.0],[0.0],[-9.81]]) #force direction
 solver.forces.append(force0)
 
-
+#CONTACT
 index = index + 1
 position_on_body = np.transpose(body1.shape[1,0:3])
 u_ground = np.matrix([[0.0],[0.0],[1.0]])
 spring_constant = 1000.0
 damping = 500.0
-
+#leg1
 force1 =  ForcesTypes.ContactForce(index, 
                                     position_on_body,
                                     u_ground, 
@@ -99,7 +100,8 @@ force1 =  ForcesTypes.ContactForce(index,
                                     damping)
 
 solver.forces.append(force1)
-#
+
+#leg2
 index = index + 1
 position_on_body = np.transpose(body1.shape[3,0:3])
 force2 =  ForcesTypes.ContactForce(index, 
@@ -109,7 +111,7 @@ force2 =  ForcesTypes.ContactForce(index,
                                     damping)
 solver.forces.append(force2)
 
-#
+#leg3
 index = index + 1
 position_on_body = np.transpose(body1.shape[5,0:3])
 force3 =  ForcesTypes.ContactForce(index, 
@@ -119,7 +121,7 @@ force3 =  ForcesTypes.ContactForce(index,
                                     damping)
 solver.forces.append(force3)
 
-#
+#leg4
 index = index + 1
 position_on_body = np.transpose(body1.shape[7,0:3])
 force4 =  ForcesTypes.ContactForce(index, 
@@ -129,14 +131,35 @@ force4 =  ForcesTypes.ContactForce(index,
                                     damping)
 solver.forces.append(force4)
 
-#
+# THRUST
+#engine 1
 index = index + 1
-engine1_loc_body = np.matrix([[0.5],[0.375],[0.0]])
-u_thrust1 = np.matrix([[0.0],[-0.25],[-0.25]])
+engine_loc_body = np.matrix([[0.375],[0.5],[0.0]])
+u_thrust = np.matrix([[-0.25],[0.0],[-0.25]])
 tau_thrust = 0.25
-force5 = ForcesTypes.PropulsionForce(index, engine1_loc_body,u_thrust1,tau_thrust)
+force5 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust)
 solver.forces.append(force5)
 
+#engine2
+index = index + 1
+engine_loc_body = np.matrix([[-0.375],[0.5],[0.0]])
+u_thrust = np.matrix([[0.25],[0.0],[-0.25]])
+force6 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust)
+solver.forces.append(force6)
+
+#engine3
+index = index + 1
+engine_loc_body = np.matrix([[-0.375],[-0.5],[0.0]])
+u_thrust = np.matrix([[0.25],[0.0],[-0.25]])
+force7 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust)
+solver.forces.append(force7)
+
+#engine4
+index = index + 1
+engine_loc_body = np.matrix([[0.375],[-0.5],[0.0]])
+u_thrust = np.matrix([[-0.25],[0.0],[-0.25]])
+force8 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust)
+solver.forces.append(force8)
 
 ###########################################################################################
 					#SETUP JOINTS
@@ -156,7 +179,7 @@ x0 = np.concatenate((np.transpose(solver.bodies[1].xyz_global_center), np.transp
 x0 = np.concatenate((x0,vel0), axis = 1)
 x0 = np.concatenate((x0,np.zeros([1,3])), axis = 1)
 #add subystems initial conditions: 
-x0 = np.concatenate((x0,np.zeros([1,1])), axis = 1)
+x0 = np.concatenate((x0,np.zeros([1,4])), axis = 1)
 #x0 = np.concatenate((x0,[[0.0]]), axis = 1)
 
 x0 = np.array(x0[0]) 
@@ -248,18 +271,43 @@ def getLegData(frame_number):
     ld = np.matmul(body1.A, np.transpose(body1.shape)) #+ body1.xyz_global_center
     return ld
 
-def getThrustData(frame_number, force):
+def getThrustData(frame_number, force01, force02, force03, force04):
     x_anim =  np.transpose(np.matrix(x.y[:,frame_number]))
     body1.BC_trans(x_anim[0:3,0],
                     x_anim[3:7,0])
-    thrust = x_anim[13,0]
-    force.UpdatePropulsion(body1, thrust)
-    v_thrust = -1/5*force.force_mag*force.u_propulsion
-    td = np.matrix([[0.0, 0.0,0.0],
-          [0.0,0.0,0.0]])
-    td[0,0:3] = np.transpose(np.matmul(body1.A,force.position_on_body)) #+ body1.xyz_global_center
-    td[1,0:3] = np.transpose(np.matmul(body1.A,force.position_on_body+v_thrust))
-    return td
+    thrust1 = x_anim[13,0]
+    thrust2 = x_anim[14,0]
+    thrust3 = x_anim[15,0]
+    thrust4 = x_anim[16,0]
+    force01.UpdatePropulsion(body1, thrust1)
+    force02.UpdatePropulsion(body1, thrust2)
+    force03.UpdatePropulsion(body1, thrust3)
+    force04.UpdatePropulsion(body1, thrust4)
+    v_thrust1 = -1/50*force01.force_mag*force01.u_propulsion
+    v_thrust2 = -1/50*force02.force_mag*force02.u_propulsion
+    v_thrust3 = -1/50*force03.force_mag*force03.u_propulsion
+    v_thrust4 = -1/50*force04.force_mag*force04.u_propulsion
+    #
+    td01 = np.matrix([[0.0, 0.0,0.0],
+                    [0.0,0.0,0.0]])
+    td01[0,0:3] = np.transpose(np.matmul(body1.A,force01.position_on_body)) #+ body1.xyz_global_center
+    td01[1,0:3] = np.transpose(np.matmul(body1.A,force01.position_on_body+v_thrust1))
+    #
+    td02 = np.matrix([[0.0, 0.0,0.0],
+                    [0.0,0.0,0.0]])
+    td02[0,0:3] = np.transpose(np.matmul(body1.A,force02.position_on_body)) #+ body1.xyz_global_center
+    td02[1,0:3] = np.transpose(np.matmul(body1.A,force02.position_on_body+v_thrust2))
+    #
+    td03 = np.matrix([[0.0, 0.0,0.0],
+                      [0.0,0.0,0.0]])
+    td03[0,0:3] = np.transpose(np.matmul(body1.A,force03.position_on_body)) #+ body1.xyz_global_center
+    td03[1,0:3] = np.transpose(np.matmul(body1.A,force03.position_on_body+v_thrust3))
+    #
+    td04 = np.matrix([[0.0, 0.0,0.0],
+                      [0.0,0.0,0.0]])
+    td04[0,0:3] = np.transpose(np.matmul(body1.A,force04.position_on_body)) #+ body1.xyz_global_center
+    td04[1,0:3] = np.transpose(np.matmul(body1.A,force04.position_on_body+v_thrust4))
+    return td01, td02, td03, td04
 
 def getTrajData():
     pass 
@@ -273,7 +321,7 @@ def animate(frame_number,y,plot):
     xn, yn, zn = getPlaneData(frame_number,xx,yy,z)
     fp = getPointData(frame_number)
     ld = getLegData(frame_number)
-    td = getThrustData(frame_number,force5)
+    td1, td2, td3, td4 = getThrustData(frame_number,force5,force6,force7,force8)
     plot[0][0] = ax.plot_surface(xn, yn, zn, color=(0.9,0.9,0.9))
     plot[1][0]= ax.plot_surface(xxg, yyg, zg, color='red', alpha = 0.0)
     plot[2][0] = ax.scatter(fp[0,0],
@@ -287,9 +335,14 @@ def animate(frame_number,y,plot):
     plot[5][0] = ax.plot3D([ld[0,2],ld[0,3]], [ld[1,2],ld[1,3]],[ld[2,2],ld[2,3]],color=(0.9,0.9,0.9),linewidth=3)
     plot[6][0] = ax.plot3D([ld[0,4],ld[0,5]], [ld[1,4],ld[1,5]],[ld[2,4],ld[2,5]],color=(0.9,0.9,0.9),linewidth=3)
     plot[7][0] = ax.plot3D([ld[0,6],ld[0,7]], [ld[1,6],ld[1,7]],[ld[2,6],ld[2,7]],color=(0.9,0.9,0.9),linewidth=3)
-    plot[8][0] = ax.plot3D([td[0,0],td[1,0]], [td[0,1],td[1,1]],[td[0,2],td[1,2]],'orange')
+    plot[8][0] = ax.plot3D([td1[0,0],td1[1,0]], [td1[0,1],td1[1,1]],[td1[0,2],td1[1,2]],'orange')
+    plot[9][0] = ax.plot3D([td2[0,0],td2[1,0]], [td2[0,1],td2[1,1]],[td2[0,2],td2[1,2]],'orange')
+    plot[10][0] = ax.plot3D([td3[0,0],td3[1,0]], [td3[0,1],td3[1,1]],[td3[0,2],td3[1,2]],'orange')
+    plot[11][0] = ax.plot3D([td4[0,0],td4[1,0]], [td4[0,1],td4[1,1]],[td4[0,2],td4[1,2]],'orange')
+    #trajectory plot
     ax2.plot3D(x.y[0,:], x.y[1,:],x.y[2,:], color=(0.5,0.5,0.9))
     ax2.scatter(x.y[0,frame_number], x.y[1,frame_number],x.y[2,frame_number], color='red', s=100)
+
     #axes stuff 
     ax.set_xlim3d(-2, 2)
     ax.set_ylim3d(-2, 2)
@@ -322,8 +375,6 @@ zg = np.zeros((2,2))
 plot1 = [ax.plot_surface(xxg, yyg, zg, color='red', alpha = 0.01)]
 plot.append(plot1)
 
-
-
 #origin
 plot2 = [ax.scatter(0.0,0.0,0.0,
                     marker = "o", 
@@ -354,14 +405,23 @@ plot7 = [ax.plot3D([ld[0,6],ld[0,7]], [ld[1,6],ld[1,7]],[ld[2,6],ld[2,7]])]
 plot.append(plot7);
 
 # thrust 1
-td = getThrustData(0, force5)
-plot8 = [ax.plot3D([td[0,0],td[1,0]], [td[0,1],td[1,1]],[td[0,2],td[1,2]],'orange')]
+td1,td2,td3,td4 = getThrustData(0,force5,force6,force7,force8)
+plot8 = [ax.plot3D([td1[0,0],td1[1,0]], [td1[0,1],td1[1,1]],[td1[0,2],td1[1,2]],'orange')]
 plot.append(plot8)
+
+plot9 = [ax.plot3D([td2[0,0],td2[1,0]], [td2[0,1],td2[1,1]],[td2[0,2],td2[1,2]],'orange')]
+plot.append(plot9)
+
+plot10 = [ax.plot3D([td3[0,0],td3[1,0]], [td3[0,1],td3[1,1]],[td3[0,2],td3[1,2]],'orange')]
+plot.append(plot10)
+
+plot11 = [ax.plot3D([td4[0,0],td4[1,0]], [td4[0,1],td4[1,1]],[td4[0,2],td4[1,2]],'orange')]
+plot.append(plot11)
 
 plt.rcParams["figure.figsize"] = [14.00, 7.0]
 ani = animation.FuncAnimation(fig, animate, frn, fargs=(y,plot), interval = 1000/10) #interval=1000/fps)
 
-#plt.show()
+plt.show()
 
 # Set up formatting for the movie files
 # Writer = animation.writers['ffmpeg']
