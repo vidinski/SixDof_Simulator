@@ -27,8 +27,9 @@ PI = np.pi; cos45 = np.cos(PI/4.)
 solver.bodies = []
 solver.forces = []
 go = []
-#Solver.solver.tnb = 1
 solver.tnb = 1
+solver.attitude_kp = -100.0 #what did I do, this shouldn't be negative
+solver.attitude_kd = -100.0 #what did I do, this shouldn't be negative
 dt = 0.1
 
 tspan = [0., 10.0]

@@ -3,10 +3,15 @@ import numpy as np
 #from body_coordinates import body_coordinates #, BC_constraints, joints
 from Kinematics.body_coordinates import body_coordinates #, skewsym
 from Kinematics.kinematics import skewsym
+import Dynamics.Controllers as cntrl
 
 global bodies
 global forces
 global tnb
+global attitude_kp
+global attitude_kd
+global ly
+global lx
 
 g = 9.81
 PI = np.pi
@@ -29,7 +34,6 @@ def solveSys(t,x):
     sd = np.transpose(x[0,7:10])
     w =  np.transpose(x[0,10:13])   
     thrust = np.transpose(x[0,13:17])
-    #thrust = 1.0
 
     #_______________________________________________________________________
 
@@ -45,24 +49,35 @@ def solveSys(t,x):
     
     for i in range(1,5):
         forces[i].UpdateContact(bodies[1], sd, w)
-    ## thrust
-    print(t)
-    if ((t > 1.0)):
-        thrust1_cmd = -45.0
-    else:
-        thrust1_cmd = 0.0 
-    if ((t > 1.25)):
-        thrust2_cmd = -55.0
-    else:
-        thrust2_cmd = 0.0 
-    if ((t > 1.1)):
-        thrust3_cmd = -40.0
-    else:
-        thrust3_cmd = 0.0 
-    if ((t > 1.2)):
-        thrust4_cmd = -45.0
-    else:
-        thrust4_cmd = 0.0  
+    ## THRUST CONTROL
+    # print(t)
+    # if ((t > 1.0)):
+    #     thrust1_cmd = -45.0
+    # else:
+    #     thrust1_cmd = 0.0 
+    # if ((t > 1.25)):
+    #     thrust2_cmd = -55.0
+    # else:
+    #     thrust2_cmd = 0.0 
+    # if ((t > 1.1)):
+    #     thrust3_cmd = -40.0
+    # else:
+    #     thrust3_cmd = 0.0 
+    # if ((t > 1.2)):
+    #     thrust4_cmd = -45.0
+    # else:
+    #     thrust4_cmd = 0.0  
+
+    Fguide, p_cmd = cntrl.ZEM_ZEV_Controller(bodies[1], s, sd) 
+    wr = np.matrix([[0.0],[0.0],[0.0]]);  
+    Tcontrol = cntrl.AttitudeController(wr,p_cmd,w,p,
+                            bodies[1].inertia, 
+                            bodies[1].A,
+                            attitude_kp, 
+                            attitude_kd)  
+        
+    Ft = cntrl.EngineMix(Fguide, Tcontrol)
+    T = Tcontrol
 
     nn = 0
     for i in range(5,9):
@@ -104,10 +119,10 @@ def solveSys(t,x):
     #_______________________________________________________________________
     #thrust force lag
     #_______________________________________________________________________
-    thrust_dot1 = np.matrix([[1/forces[5].tau*(-thrust[0,0] + thrust1_cmd)]])
-    thrust_dot2 = np.matrix([[1/forces[6].tau*(-thrust[1,0] + thrust2_cmd)]])    
-    thrust_dot3 = np.matrix([[1/forces[7].tau*(-thrust[2,0] + thrust3_cmd)]])    
-    thrust_dot4 = np.matrix([[1/forces[8].tau*(-thrust[3,0] + thrust4_cmd)]])    
+    thrust_dot1 = np.matrix([[1/forces[5].tau*(-thrust[0,0] + Ft[0,0])]])
+    thrust_dot2 = np.matrix([[1/forces[6].tau*(-thrust[1,0] + Ft[1,0])]])    
+    thrust_dot3 = np.matrix([[1/forces[7].tau*(-thrust[2,0] + Ft[2,0])]])    
+    thrust_dot4 = np.matrix([[1/forces[8].tau*(-thrust[3,0] + Ft[3,0])]])    
 
     #package them up
     qdoubledot = np.concatenate((np.transpose(sdd),np.transpose(alpha)), axis=1)
