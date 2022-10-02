@@ -28,8 +28,8 @@ solver.bodies = []
 solver.forces = []
 go = []
 solver.tnb = 1
-solver.attitude_kp = -100.0 #what did I do, this shouldn't be negative
-solver.attitude_kd = -100.0 #what did I do, this shouldn't be negative
+solver.attitude_kp = -1500 #what did I do, this shouldn't be negative
+solver.attitude_kd = -500 #what did I do, this shouldn't be negative
 dt = 0.1
 
 tspan = [0., 10.0]
@@ -68,11 +68,15 @@ body1 = body_coordinates(0, #index
 			 np.matrix([[0.0],[0.0],[0.0]]), #joints
 			 np.matrix([[0.0],[1.0],[0.0]]), #unit vectors
 			 np.matrix([[1.0],[0.0],[0.0],[0.0]]), #quaternion (first element scalar)
-			 10.0, #mass
-			 inertia = 100.0*np.eye(3,3)) #inertia xx,yy,zz,xy,xz,yz 
+			 100.0, #mass
+			 inertia = np.matrix([[10, 1.2,0.5],
+                                 [1.2,19,1.5],
+                                 [0.5,1.5,25]]))#100.0*np.eye(3,3)) #inertia xx,yy,zz,xy,xz,yz 
 
 vel0 = np.matrix([-10.0, 0.0, -10.0])
-body1.BC_trans(np.matrix([[100.0],[0.0],[200.0]]),np.matrix([[0.965926],[0.0],[0.258819],[0.0]]))
+w0 = np.matrix([1.0, 10.0, 10.0])
+# body1.BC_trans(np.matrix([[100.0],[0.0],[200.0]]),np.matrix([[0.965926],[0.0],[0.258819],[0.0]]))
+body1.BC_trans(np.matrix([[100.0],[0.0],[200.0]]),np.matrix([[1.0],[0.0],[0.0],[0.0]]))
 solver.bodies.append(body1)
 
 ###########################################################################################
@@ -84,15 +88,15 @@ index = -1
 #GRAVITY
 index = index + 1
 force0 = ForcesTypes.GravityForce(0, #index
-                              [[0.0],[0.0],[-9.81]]) #force direction
+                              [[0.0],[0.0],[-3.721]]) #force direction, mars gravitational acceleration
 solver.forces.append(force0)
 
 #CONTACT
 index = index + 1
 position_on_body = np.transpose(body1.shape[1,0:3])
 u_ground = np.matrix([[0.0],[0.0],[1.0]])
-spring_constant = 1000.0
-damping = 500.0
+spring_constant = 10000.0
+damping = 5000.0
 #leg1
 force1 =  ForcesTypes.ContactForce(index, 
                                     position_on_body,
@@ -137,7 +141,7 @@ solver.forces.append(force4)
 index = index + 1
 engine_loc_body = np.matrix([[0.375],[0.5],[0.0]])
 u_thrust = np.matrix([[-0.25],[0.0],[-0.25]])
-tau_thrust = 0.25
+tau_thrust = 0.05
 force5 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust)
 solver.forces.append(force5)
 
@@ -178,7 +182,8 @@ x0 = np.concatenate((np.transpose(solver.bodies[1].xyz_global_center), np.transp
 
 #concatenate [x, y, z, p0, p1, p2, p3] with [xd, yd ,zd, w1, w2, w3]
 x0 = np.concatenate((x0,vel0), axis = 1)
-x0 = np.concatenate((x0,np.zeros([1,3])), axis = 1)
+#x0 = np.concatenate((x0,np.zeros([1,3])), axis = 1)
+x0 = np.concatenate((x0,w0), axis = 1)
 #add subystems initial conditions: 
 x0 = np.concatenate((x0,np.zeros([1,4])), axis = 1)
 #x0 = np.concatenate((x0,[[0.0]]), axis = 1)
