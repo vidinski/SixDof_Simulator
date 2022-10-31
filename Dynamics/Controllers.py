@@ -29,24 +29,24 @@ def ZEM_ZEV_Controller(body, s, sd):
     p_cmd = np.matrix([[0.965926],[0.0],[0.258819],[0.0]])
     return Fguide, p_cmd
 
-def EngineMix(Fguide, Tcontrol): 
+def RCSMix(Tcontrol): 
 
-    #This might be wrong
-    Mix = np.matrix([[0.353553,  0.707,  0.943,  0.707],
-                     [0.353553,  0.707, -0.943, -0.707], 
-                     [0.353553, -0.707, -0.943,  0.707],
-                     [0.353553, -0.707, 0.943,  -0.707]])
-    
-    Fcmd = np.concatenate((np.matrix(Fguide), Tcontrol), axis = 0)
-    
-    n = 0
+    # Tx = 2ry*F24 
+    # Ty = 2rx*F13
+    # Tz =
+
+    #  T = np.matrix([[0.0, 0.5,0.0,-0.5],
+    #                 [0.5, 0.0,-0.5,0.0],
+    #                 [0.0, 0.0,0.0,0.0]])*np.Matrix([[F1],[F2],[F3],[F4]])
+
+    # n = 0
     # for cmd in Fcmd:
     #     if cmd < 0:
     #         Fcmd[n] = 0.0
     #     n = n+1
     
     #print(Fcmd)
-    #Ft = np.matmul(Mix, -Fcmd)
-    #print(Ft)
-    Ft = np.matrix([[0.0],[0.0], [0.0],[0.0]])
-    return Ft
+    
+    Frcs = np.matrix([[0.0],[0.0], [0.0],[0.0]])
+    #print(Frcs)
+    return Frcs

@@ -33,7 +33,7 @@ def solveSys(t,x):
     p =  np.transpose(x[0,3:7])
     sd = np.transpose(x[0,7:10])
     w =  np.transpose(x[0,10:13])   
-    thrust = np.transpose(x[0,13:17])
+    thrust = np.transpose(x[0,13:20])
 
     #_______________________________________________________________________
 
@@ -76,17 +76,20 @@ def solveSys(t,x):
                             attitude_kp, 
                             attitude_kd)  
         
-    Ft = cntrl.EngineMix(Fguide, Tcontrol)
-    T = Tcontrol
+    Ft = cntrl.RCSMix(Tcontrol)
+    #T = Tcontrol
 
     nn = 0
-    for i in range(5,9):
+    for i in range(5,12):
         forces[i].UpdatePropulsion(bodies[1], thrust[nn,0])
         nn = nn + 1
     
     for frc in forces:
         F = F+frc.force_global
         T = T+frc.torque_body
+
+    # print(Tcontrol[0,0])
+    # print(T[0,0])
 
     #_______________________________________________________________________
     #Solve for X DOT: 
@@ -123,7 +126,9 @@ def solveSys(t,x):
     thrust_dot2 = np.matrix([[1/forces[6].tau*(-thrust[1,0] + Ft[1,0])]])    
     thrust_dot3 = np.matrix([[1/forces[7].tau*(-thrust[2,0] + Ft[2,0])]])    
     thrust_dot4 = np.matrix([[1/forces[8].tau*(-thrust[3,0] + Ft[3,0])]])    
-
+    thrust_dot5 = np.matrix([[1/forces[9].tau*(-thrust[3,0] + Ft[3,0])]]) 
+    thrust_dot6 = np.matrix([[1/forces[10].tau*(-thrust[3,0] + Ft[3,0])]]) 
+    thrust_dot7 = np.matrix([[1/forces[11].tau*(-thrust[3,0] + Ft[3,0])]]) 
     #package them up
     qdoubledot = np.concatenate((np.transpose(sdd),np.transpose(alpha)), axis=1)
     qdot = np.concatenate((np.transpose(sd),np.transpose(pd)), axis=1)
@@ -133,6 +138,9 @@ def solveSys(t,x):
     xdot = np.concatenate((xdot,thrust_dot2), axis = 1)
     xdot = np.concatenate((xdot,thrust_dot3), axis = 1)
     xdot = np.concatenate((xdot,thrust_dot4), axis = 1)
+    xdot = np.concatenate((xdot,thrust_dot5), axis = 1)
+    xdot = np.concatenate((xdot,thrust_dot6), axis = 1)
+    xdot = np.concatenate((xdot,thrust_dot7), axis = 1)
     #send array back to solver
     xdot = np.array(xdot)
     #print(thrust_cmd)
