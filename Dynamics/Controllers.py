@@ -25,8 +25,8 @@ def ZEM_ZEV_Controller(body, s, sd):
     #tgo = (-zd_0 + sqrt(zd_0^2 - 4*0.5*g*z_0))/(2*0.5*g)
     #sign of g is embedded in the variable g
     Fguide = 0.0 #np.matrix([[0.0]]),#np.matrix([[0.0], [0.0],[0.0]]) 
-    # p_cmd = np.matrix([[1.0],[0.0], [0.0],[0.0]])
-    p_cmd = np.matrix([[0.965926],[0.0],[0.258819],[0.0]])
+    p_cmd = np.matrix([[1.0],[0.0], [0.0],[0.0]])
+    #p_cmd = np.matrix([[0.965926],[0.0],[0.258819],[0.0]])
     return Fguide, p_cmd
 
 def RCSMix(Tcontrol): 
@@ -34,19 +34,20 @@ def RCSMix(Tcontrol):
     # Tx = 2ry*F24 
     # Ty = 2rx*F13
     # Tz =
+    #if mixFirstPass:
+    rcsMix = 0.5*np.eye(3,3) #*np.Matrix([[F1],[F2],[F3],[F4],[F5],[F6]])
 
-    #  T = np.matrix([[0.0, 0.5,0.0,-0.5],
-    #                 [0.5, 0.0,-0.5,0.0],
-    #                 [0.0, 0.0,0.0,0.0]])*np.Matrix([[F1],[F2],[F3],[F4]])
-
-    # n = 0
-    # for cmd in Fcmd:
-    #     if cmd < 0:
-    #         Fcmd[n] = 0.0
-    #     n = n+1
+    rcsMixInv = np.linalg.inv(rcsMix) 
+    F123 = np.matmul(rcsMixInv,Tcontrol)
+    Frcs = np.zeros((6,1))
     
-    #print(Fcmd)
+    Frcs[0] = -0.5*F123[1] #about y
+    Frcs[1] = 0.5*F123[0]
+    Frcs[2] = 0.5*F123[1] #about y
+    Frcs[3] = -0.5*F123[0]
+    Frcs[4] =  0.5*F123[2]
+    Frcs[5] = -0.5*F123[2]
     
-    Frcs = np.matrix([[0.0],[0.0], [0.0],[0.0]])
+    #Frcs = np.matrix([[0.0],[0.0], [0.0],[0.0]])
     #print(Frcs)
     return Frcs

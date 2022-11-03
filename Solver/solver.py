@@ -75,9 +75,18 @@ def solveSys(t,x):
                             bodies[1].A,
                             attitude_kp, 
                             attitude_kd)  
-        
+
+    #debug:
+    #Tcontrol = np.matrix([[0.0], [10.0],[0.0]]) 
+    #debug
+
+
     Ft = cntrl.RCSMix(Tcontrol)
+
+    #debug 
+    #Ft = np.matrix([[0.0],[0.0], [0.0],[0.0], [0.0],[0.0]])
     #T = Tcontrol
+    #debug
 
     nn = 0
     for i in range(5,12):
@@ -88,9 +97,7 @@ def solveSys(t,x):
         F = F+frc.force_global
         T = T+frc.torque_body
 
-    # print(Tcontrol[0,0])
-    # print(T[0,0])
-
+    print('Tcntl: ',Tcontrol[1,0], 'Tact: ', T[1,0])
     #_______________________________________________________________________
     #Solve for X DOT: 
     #_______________________________________________________________________
@@ -126,9 +133,9 @@ def solveSys(t,x):
     thrust_dot2 = np.matrix([[1/forces[6].tau*(-thrust[1,0] + Ft[1,0])]])    
     thrust_dot3 = np.matrix([[1/forces[7].tau*(-thrust[2,0] + Ft[2,0])]])    
     thrust_dot4 = np.matrix([[1/forces[8].tau*(-thrust[3,0] + Ft[3,0])]])    
-    thrust_dot5 = np.matrix([[1/forces[9].tau*(-thrust[3,0] + Ft[3,0])]]) 
-    thrust_dot6 = np.matrix([[1/forces[10].tau*(-thrust[3,0] + Ft[3,0])]]) 
-    thrust_dot7 = np.matrix([[1/forces[11].tau*(-thrust[3,0] + Ft[3,0])]]) 
+    thrust_dot5 = np.matrix([[1/forces[9].tau*(-thrust[4,0] + Ft[4,0])]]) 
+    thrust_dot6 = np.matrix([[1/forces[10].tau*(-thrust[5,0] + Ft[5,0])]]) 
+    thrust_dot7 = np.matrix([[1/forces[11].tau*(-thrust[6,0] + 0.0)]]) 
     #package them up
     qdoubledot = np.concatenate((np.transpose(sdd),np.transpose(alpha)), axis=1)
     qdot = np.concatenate((np.transpose(sd),np.transpose(pd)), axis=1)

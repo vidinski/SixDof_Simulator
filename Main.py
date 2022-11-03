@@ -28,8 +28,8 @@ solver.bodies = []
 solver.forces = []
 go = []
 solver.tnb = 1
-solver.attitude_kp = -1.500 #what did I do, this shouldn't be negative
-solver.attitude_kd = -0.500 #what did I do, this shouldn't be negative
+solver.attitude_kp = -1500 #what did I do, this shouldn't be negative
+solver.attitude_kd = -500 #what did I do, this shouldn't be negative
 dt = 0.1
 
 tspan = [0., 10.0]
@@ -74,7 +74,7 @@ body1 = body_coordinates(0, #index
                                  [0.5,1.5,25]]))#100.0*np.eye(3,3)) #inertia xx,yy,zz,xy,xz,yz 
 
 vel0 = np.matrix([-10.0, 0.0, -10.0])
-w0 = np.matrix([1.0, 10.0, 10.0])
+w0 = np.matrix([5.0, 5.0, 5.0])
 # body1.BC_trans(np.matrix([[100.0],[0.0],[200.0]]),np.matrix([[0.965926],[0.0],[0.258819],[0.0]]))
 body1.BC_trans(np.matrix([[100.0],[0.0],[200.0]]),np.matrix([[1.0],[0.0],[0.0],[0.0]]))
 solver.bodies.append(body1)
@@ -140,7 +140,7 @@ solver.forces.append(force4)
 #rcs 1
 index = index + 1
 engine_loc_body = np.matrix([[0.5],[0.0],[0.0]])
-u_thrust = np.matrix([[0.0],[0.0],[-1.0]])
+u_thrust = np.matrix([[0.0],[0.0],[1.0]])
 tau_thrust = 0.01
 force5 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust)
 solver.forces.append(force5)
@@ -148,34 +148,34 @@ solver.forces.append(force5)
 #rcs 2
 index = index + 1
 engine_loc_body = np.matrix([[0.0],[0.5],[0.0]])
-u_thrust = np.matrix([[0.0],[0.0],[-1.0]])
+u_thrust = np.matrix([[0.0],[0.0],[1.0]])
 force6 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust)
 solver.forces.append(force6)
 
 #rcs 3 
 index = index + 1
 engine_loc_body = np.matrix([[-0.5],[0.0],[0.0]])
-u_thrust = np.matrix([[0.0],[0.0],[-1.0]])
+u_thrust = np.matrix([[0.0],[0.0],[1.0]])
 force7 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust)
 solver.forces.append(force7)
 
 #rcs 4
 index = index + 1
 engine_loc_body = np.matrix([[0.0],[-0.5],[0.0]])
-u_thrust = np.matrix([[0.0],[0.0],[-1.0]])
+u_thrust = np.matrix([[0.0],[0.0],[1.0]])
 force8 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust)
 solver.forces.append(force8)
 
 #rcs 5
 index = index + 1
-engine_loc_body = np.matrix([[-0.5],[0.0],[0.0]])
-u_thrust = np.matrix([[0.0],[-1.0],[0.0]])
+engine_loc_body = np.matrix([[0.5],[0.0],[0.0]])
+u_thrust = np.matrix([[0.0],[1.0],[0.0]])
 force9 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust)
 solver.forces.append(force9)
 
 #rcs 6
 index = index + 1
-engine_loc_body = np.matrix([[0.5],[0.0],[0.0]])
+engine_loc_body = np.matrix([[-0.5],[0.0],[0.0]])
 u_thrust = np.matrix([[0.0],[1.0],[0.0]])
 force10 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust)
 solver.forces.append(force10)
@@ -183,7 +183,7 @@ solver.forces.append(force10)
 #Main engine
 index = index + 1
 engine_loc_body =  np.matrix([[0.0],[0.0],[0.0]])
-u_thrust = np.matrix([[0.0],[0.0],[-1.0]])
+u_thrust = np.matrix([[0.0],[0.0],[1.0]])
 tau_thrust = 0.1
 force11 = ForcesTypes.PropulsionForce(index, engine_loc_body, u_thrust, tau_thrust)
 solver.forces.append(force11)
@@ -318,7 +318,7 @@ def getThrustData(frame_number):
         # force04.UpdatePropulsion(body1, thrust4)
         # force05.UpdatePropulsion(body1, thrust5)
 
-        v_thrustn = -1/50*solver.forces[i].force_mag*solver.forces[i].u_propulsion
+        v_thrustn = 1/50*solver.forces[i].force_mag*solver.forces[i].u_propulsion
         # v_thrust2 = -1/50*force02.force_mag*force02.u_propulsion
         # v_thrust3 = -1/50*force03.force_mag*force03.u_propulsion
         # v_thrust4 = -1/50*force04.force_mag*force04.u_propulsion
