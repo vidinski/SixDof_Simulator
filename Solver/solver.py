@@ -12,8 +12,9 @@ global attitude_kp
 global attitude_kd
 global ly
 global lx
-
-g = 9.81
+global FrcsLim
+global g 
+global spacecraftMass
 PI = np.pi
 
 def solveSys(t,x):
@@ -97,7 +98,7 @@ def solveSys(t,x):
         F = F+frc.force_global
         T = T+frc.torque_body
 
-    print('Tcntl: ',Tcontrol[1,0], 'Tact: ', T[1,0])
+    #print('Tcntl: ',Tcontrol[1,0], 'Tact: ', T[1,0])
     #_______________________________________________________________________
     #Solve for X DOT: 
     #_______________________________________________________________________
@@ -135,7 +136,7 @@ def solveSys(t,x):
     thrust_dot4 = np.matrix([[1/forces[8].tau*(-thrust[3,0] + Ft[3,0])]])    
     thrust_dot5 = np.matrix([[1/forces[9].tau*(-thrust[4,0] + Ft[4,0])]]) 
     thrust_dot6 = np.matrix([[1/forces[10].tau*(-thrust[5,0] + Ft[5,0])]]) 
-    thrust_dot7 = np.matrix([[1/forces[11].tau*(-thrust[6,0] + 0.0)]]) 
+    thrust_dot7 = np.matrix([[1/forces[11].tau*(-thrust[6,0] + Fguide)]]) 
     #package them up
     qdoubledot = np.concatenate((np.transpose(sdd),np.transpose(alpha)), axis=1)
     qdot = np.concatenate((np.transpose(sd),np.transpose(pd)), axis=1)
@@ -151,6 +152,7 @@ def solveSys(t,x):
     #send array back to solver
     xdot = np.array(xdot)
     #print(thrust_cmd)
+    #print(t)
     return xdot[0]
   
 

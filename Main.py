@@ -24,14 +24,19 @@ import matplotlib.animation as animation
 #https://stackoverflow.com/questions/3461869/plot-a-plane-based-on-a-normal-vector-and-a-point-in-matlab-or-matplotlib/23006541
 
 PI = np.pi; cos45 = np.cos(PI/4.)
+
+#global
 solver.bodies = []
 solver.forces = []
-go = []
 solver.tnb = 1
 solver.attitude_kp = -1500 #what did I do, this shouldn't be negative
 solver.attitude_kd = -500 #what did I do, this shouldn't be negative
-dt = 0.1
+solver.FrcsLim = 50 # force limit on rcs
+solver.g = -3.721; 
+solver.spacecraftMass = 100.0
 
+dt = 0.1
+go = []
 tspan = [0., 10.0]
 tmr = np.arange(0.0, tspan[1], dt)
 
@@ -68,13 +73,13 @@ body1 = body_coordinates(0, #index
 			 np.matrix([[0.0],[0.0],[0.0]]), #joints
 			 np.matrix([[0.0],[1.0],[0.0]]), #unit vectors
 			 np.matrix([[1.0],[0.0],[0.0],[0.0]]), #quaternion (first element scalar)
-			 100.0, #mass
+			 solver.spacecraftMass, #mass
 			 inertia = np.matrix([[10, 1.2,0.5],
                                  [1.2,19,1.5],
                                  [0.5,1.5,25]]))#100.0*np.eye(3,3)) #inertia xx,yy,zz,xy,xz,yz 
 
 vel0 = np.matrix([-10.0, 0.0, -10.0])
-w0 = np.matrix([5.0, 5.0, 5.0])
+w0 = np.matrix([0.0, 0.0, 0.0])
 # body1.BC_trans(np.matrix([[100.0],[0.0],[200.0]]),np.matrix([[0.965926],[0.0],[0.258819],[0.0]]))
 body1.BC_trans(np.matrix([[100.0],[0.0],[200.0]]),np.matrix([[1.0],[0.0],[0.0],[0.0]]))
 solver.bodies.append(body1)
@@ -88,7 +93,7 @@ index = -1
 #GRAVITY
 index = index + 1
 force0 = ForcesTypes.GravityForce(0, #index
-                              [[0.0],[0.0],[-3.721]]) #force direction, mars gravitational acceleration
+                              [[0.0],[0.0],[solver.g]]) #force direction, mars gravitational acceleration
 solver.forces.append(force0)
 
 #CONTACT
@@ -141,7 +146,7 @@ solver.forces.append(force4)
 index = index + 1
 engine_loc_body = np.matrix([[0.5],[0.0],[0.0]])
 u_thrust = np.matrix([[0.0],[0.0],[1.0]])
-tau_thrust = 0.01
+tau_thrust = 0.05
 force5 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust)
 solver.forces.append(force5)
 
@@ -307,47 +312,16 @@ def getThrustData(frame_number):
     td = []
     for i in range(5,10):
         thrustn = x_anim[n,0]
-        # thrust2 = x_anim[14,0]
-        # thrust3 = x_anim[15,0]
-        # thrust4 = x_anim[16,0]
-        # thrust5 = x_anim[17,0]
 
         solver.forces[i].UpdatePropulsion(body1, thrustn)
-        # force02.UpdatePropulsion(body1, thrust2)
-        # force03.UpdatePropulsion(body1, thrust3)
-        # force04.UpdatePropulsion(body1, thrust4)
-        # force05.UpdatePropulsion(body1, thrust5)
 
         v_thrustn = 1/50*solver.forces[i].force_mag*solver.forces[i].u_propulsion
-        # v_thrust2 = -1/50*force02.force_mag*force02.u_propulsion
-        # v_thrust3 = -1/50*force03.force_mag*force03.u_propulsion
-        # v_thrust4 = -1/50*force04.force_mag*force04.u_propulsion
-        # v_thrust5 = -1/50*force05.force_mag*force05.u_propulsion
         #
         td0n = np.matrix([[0.0, 0.0,0.0],
                         [0.0,0.0,0.0]])
         td0n[0,0:3] = np.transpose(np.matmul(body1.A,solver.forces[i].position_on_body)) #+ body1.xyz_global_center
         td0n[1,0:3] = np.transpose(np.matmul(body1.A,solver.forces[i].position_on_body+v_thrustn))
-        #
-        # td02 = np.matrix([[0.0, 0.0,0.0],
-        #                 [0.0,0.0,0.0]])
-        # td02[0,0:3] = np.transpose(np.matmul(body1.A,force02.position_on_body)) #+ body1.xyz_global_center
-        # td02[1,0:3] = np.transpose(np.matmul(body1.A,force02.position_on_body+v_thrust2))
-        # #
-        # td03 = np.matrix([[0.0, 0.0,0.0],
-        #                   [0.0,0.0,0.0]])
-        # td03[0,0:3] = np.transpose(np.matmul(body1.A,force03.position_on_body)) #+ body1.xyz_global_center
-        # td03[1,0:3] = np.transpose(np.matmul(body1.A,force03.position_on_body+v_thrust3))
-        # #
-        # td04 = np.matrix([[0.0, 0.0,0.0],
-        #                   [0.0,0.0,0.0]])
-        # td04[0,0:3] = np.transpose(np.matmul(body1.A,force04.position_on_body)) #+ body1.xyz_global_center
-        # td04[1,0:3] = np.transpose(np.matmul(body1.A,force04.position_on_body+v_thrust4))
-        # #
-        # td05 = np.matrix([[0.0, 0.0,0.0],
-        #                   [0.0,0.0,0.0]])
-        # td05[0,0:3] = np.transpose(np.matmul(body1.A,force05.position_on_body)) #+ body1.xyz_global_center
-        # td05[1,0:3] = np.transpose(np.matmul(body1.A,force05.position_on_body+v_thrust5))
+
         td.append(td0n)
         n = n +1
     return td
@@ -384,7 +358,7 @@ def animate(frame_number,y,plot):
     plot[9][0] = ax.plot3D([td2[0,0],td2[1,0]], [td2[0,1],td2[1,1]],[td2[0,2],td2[1,2]],'cyan')
     plot[10][0] = ax.plot3D([td3[0,0],td3[1,0]], [td3[0,1],td3[1,1]],[td3[0,2],td3[1,2]],'cyan')
     plot[11][0] = ax.plot3D([td4[0,0],td4[1,0]], [td4[0,1],td4[1,1]],[td4[0,2],td4[1,2]],'cyan')
-    plot[12][0] = ax.plot3D([td5[0,0],td5[1,0]], [td5[0,1],td5[1,1]],[td5[0,2],td5[1,2]],'orange')
+    plot[12][0] = ax.plot3D([td5[0,0],td5[1,0]], [td5[0,1],td5[1,1]],[td5[0,2],td5[1,2]],'cyan')
     #trajectory plot
     ax2.plot3D(x.y[0,:], x.y[1,:],x.y[2,:], color=(0.5,0.5,0.9))
     ax2.scatter(x.y[0,frame_number], x.y[1,frame_number],x.y[2,frame_number], color='red', s=100)
@@ -396,9 +370,9 @@ def animate(frame_number,y,plot):
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
-    ax2.set_xlim3d(-200, 200)
-    ax2.set_ylim3d(-200, 200)
-    ax2.set_zlim3d(0.0, 400)
+    ax2.set_xlim3d(0.0, 200)
+    ax2.set_ylim3d(0.0, 200)
+    ax2.set_zlim3d(0.0, 200)
     ax2.set_xlabel('X')
     ax2.set_ylabel('Y')
     ax2.set_zlabel('Z')
