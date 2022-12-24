@@ -32,12 +32,13 @@ solver.tnb = 1
 solver.attitude_kp = -1500 #what did I do, this shouldn't be negative
 solver.attitude_kd = -500 #what did I do, this shouldn't be negative
 solver.FrcsLim = 50 # force limit on rcs
-solver.g = -3.721; 
-solver.spacecraftMass = 100.0
+solver.FEngineLim = 1200 # force limit on  main engine thruster
+solver.g = -3.721; # Mars surface acceleration due to gravity 
+solver.spacecraftMass = 100.0 # space craft mass
 
 dt = 0.1
 go = []
-tspan = [0., 10.0]
+tspan = [0., 20.0]
 tmr = np.arange(0.0, tspan[1], dt)
 
 ###########################################################################################
@@ -78,10 +79,10 @@ body1 = body_coordinates(0, #index
                                  [1.2,19,1.5],
                                  [0.5,1.5,25]]))#100.0*np.eye(3,3)) #inertia xx,yy,zz,xy,xz,yz 
 
-vel0 = np.matrix([-10.0, 0.0, -10.0])
+vel0 = np.matrix([0.0, 0.0, -30.0])
 w0 = np.matrix([0.0, 0.0, 0.0])
 # body1.BC_trans(np.matrix([[100.0],[0.0],[200.0]]),np.matrix([[0.965926],[0.0],[0.258819],[0.0]]))
-body1.BC_trans(np.matrix([[100.0],[0.0],[200.0]]),np.matrix([[1.0],[0.0],[0.0],[0.0]]))
+body1.BC_trans(np.matrix([[0.0],[0.0],[200.0]]),np.matrix([[1.0],[0.0],[0.0],[0.0]]))
 solver.bodies.append(body1)
 
 ###########################################################################################
@@ -93,7 +94,7 @@ index = -1
 #GRAVITY
 index = index + 1
 force0 = ForcesTypes.GravityForce(0, #index
-                              [[0.0],[0.0],[solver.g]]) #force direction, mars gravitational acceleration
+                              [[0.0],[0.0],[solver.g*solver.spacecraftMass]]) #force direction, mars gravitational acceleration
 solver.forces.append(force0)
 
 #CONTACT
@@ -310,12 +311,12 @@ def getThrustData(frame_number):
                     x_anim[3:7,0])
     n = 13
     td = []
-    for i in range(5,10):
+    for i in range(5,12):
         thrustn = x_anim[n,0]
 
         solver.forces[i].UpdatePropulsion(body1, thrustn)
 
-        v_thrustn = 1/50*solver.forces[i].force_mag*solver.forces[i].u_propulsion
+        v_thrustn = -1/solver.FrcsLim*solver.forces[i].force_mag*solver.forces[i].u_propulsion
         #
         td0n = np.matrix([[0.0, 0.0,0.0],
                         [0.0,0.0,0.0]])
@@ -340,7 +341,7 @@ def animate(frame_number,y,plot):
     ld = getLegData(frame_number)
     #td1, td2, td3, td4, td5 = getThrustData(frame_number,force5,force6,force7,force8, force9)
     td = getThrustData(frame_number)
-    td1 = td[0]; td2 = td[1]; td3 = td[2]; td4 = td[3]; td5 = td[4]; 
+    td1 = td[0]; td2 = td[1]; td3 = td[2]; td4 = td[3]; td5 = td[4]; td6 = td[5]; td7 = td[6]
     plot[0][0] = ax.plot_surface(xn, yn, zn, color=(0.9,0.9,0.9))
     plot[1][0]= ax.plot_surface(xxg, yyg, zg, color='red', alpha = 0.0)
     plot[2][0] = ax.scatter(fp[0,0],
@@ -359,6 +360,8 @@ def animate(frame_number,y,plot):
     plot[10][0] = ax.plot3D([td3[0,0],td3[1,0]], [td3[0,1],td3[1,1]],[td3[0,2],td3[1,2]],'cyan')
     plot[11][0] = ax.plot3D([td4[0,0],td4[1,0]], [td4[0,1],td4[1,1]],[td4[0,2],td4[1,2]],'cyan')
     plot[12][0] = ax.plot3D([td5[0,0],td5[1,0]], [td5[0,1],td5[1,1]],[td5[0,2],td5[1,2]],'cyan')
+    plot[13][0] = ax.plot3D([td6[0,0],td6[1,0]], [td6[0,1],td6[1,1]],[td6[0,2],td6[1,2]],'cyan')
+    plot[14][0] = ax.plot3D([td7[0,0],td7[1,0]], [td7[0,1],td7[1,1]],[td7[0,2],td7[1,2]],'orange')
     #trajectory plot
     ax2.plot3D(x.y[0,:], x.y[1,:],x.y[2,:], color=(0.5,0.5,0.9))
     ax2.scatter(x.y[0,frame_number], x.y[1,frame_number],x.y[2,frame_number], color='red', s=100)
@@ -370,8 +373,8 @@ def animate(frame_number,y,plot):
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
-    ax2.set_xlim3d(0.0, 200)
-    ax2.set_ylim3d(0.0, 200)
+    ax2.set_xlim3d(-100.0,100.0)
+    ax2.set_ylim3d(-100.0,100.0)
     ax2.set_zlim3d(0.0, 200)
     ax2.set_xlabel('X')
     ax2.set_ylabel('Y')
@@ -427,7 +430,7 @@ plot.append(plot7);
 # thrust 1
 #td1,td2,td3,td4,td5 = getThrustData(0,force5,force6,force7,force8,force9)
 td = getThrustData(0)
-td1 = td[0]; td2 = td[1]; td3 = td[2]; td4 = td[3]; td5 = td[4]; 
+td1 = td[0]; td2 = td[1]; td3 = td[2]; td4 = td[3]; td5 = td[4]; td6 = td[5]; td7 = td[6]
 plot8 = [ax.plot3D([td1[0,0],td1[1,0]], [td1[0,1],td1[1,1]],[td1[0,2],td1[1,2]],'cyan')]
 plot.append(plot8)
 
@@ -440,7 +443,13 @@ plot.append(plot10)
 plot11 = [ax.plot3D([td4[0,0],td4[1,0]], [td4[0,1],td4[1,1]],[td4[0,2],td4[1,2]],'cyan')]
 plot.append(plot11)
 
-plot12 = [ax.plot3D([td5[0,0],td5[1,0]], [td5[0,1],td5[1,1]],[td5[0,2],td5[1,2]],'orange')]
+plot12 = [ax.plot3D([td5[0,0],td5[1,0]], [td5[0,1],td5[1,1]],[td5[0,2],td5[1,2]],'cyan')]
+plot.append(plot12)
+
+plot13 = [ax.plot3D([td6[0,0],td6[1,0]], [td6[0,1],td6[1,1]],[td6[0,2],td6[1,2]],'cyan')]
+plot.append(plot12)
+
+plot13 = [ax.plot3D([td7[0,0],td7[1,0]], [td7[0,1],td7[1,1]],[td7[0,2],td7[1,2]],'orange')]
 plot.append(plot12)
 
 plt.rcParams["figure.figsize"] = [14.00, 7.0]

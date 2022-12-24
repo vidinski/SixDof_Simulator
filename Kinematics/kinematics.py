@@ -18,3 +18,20 @@ def p2A(p):
         A = np.transpose(np.matmul(G,np.transpose(L)))
         return A #, G, L
 
+def A2p(A):
+        # if (1 + A[0,0] - A[1,1] - A[2,2]) <= 0.0: 
+        #         p0 = 1.0
+        # else: 
+        #         p0 = np.sqrt(1/4*(1 + A[0,0] - A[1,1] - A[2,2]))
+        p0 = np.sqrt(1/4*(1 + A[0,0] - A[1,1] - A[2,2]))
+        # p1 = np.sqrt(1/4*(1 - A[0,0] + A[1,1] - A[2,2]))
+        # p2 = np.sqrt(1/4*(1 - A[0,0] - A[1,1] + A[2,2]))
+        # p3 = np.sqrt(1/4*(1 + A[0,0] + A[1,1] + A[2,2]))
+        # print(np.size(p0))
+        # print(np.matrix([[p0],[p0],[p0],[p0]]))
+        p = np.matrix([[1.0],[0.0],[0.0],[0.0]])
+        p[0] = p0
+        p[1] = (A[0,1] + A[1,0])*1/(4*p0)
+        p[2] = (A[2,0] + A[0,2])*1/(4*p0)
+        p[3] = (A[1,2] - A[2,1])*1/(4*p0)
+        return p

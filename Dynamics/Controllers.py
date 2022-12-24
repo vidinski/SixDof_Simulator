@@ -1,5 +1,6 @@
 import numpy as np 
 from Kinematics.kinematics import skewsym
+from Kinematics.kinematics import A2p
 from Solver import solver 
 
 def AttitudeController(wr,pr,w,p,J,A,kp,kd): 
@@ -26,21 +27,49 @@ def ZEM_ZEV_Controller(body, s, sd):
     vf = np.matrix([[0.0], [0.0],[0.0]]) #final desired velocity
     z_0 = s[2]
     zd_0 = sd[2]
-    tgo = (zd_0 - np.sqrt(zd_0**2 - 4*0.5*solver.g*z_0))/(2*0.5*solver.g)
+    tgo = (-zd_0 + np.sqrt(zd_0**2 - 4*0.5*solver.g*z_0))/(2*0.5*solver.g)
+    if tgo<0.0: 
+        tgo = (-zd_0 - np.sqrt(zd_0**2 - 4*0.5*solver.g*z_0))/(2*0.5*solver.g)
+    elif abs(tgo) < 0.1:
+        tgo = 0.1
     gravVec = np.matrix([[0.0], [0.0],[solver.g]])
     ZEM = rf - (s + sd*tgo + 0.5*gravVec*tgo**2)
     ZEV = vf - (sd + gravVec*tgo)
-    acmd = ZEM*6.0/tgo**2-ZEV*2.0/tgo
-
+    #acmd = -s*6/tgo**2 -(sd + gravVec*tgo)*4/tgo - gravVec
+    #acmd = -(sd + gravVec*tgo)*4/tgo - gravVec
+    acmd = ZEM*6.0/tgo**2 + ZEV*2.0/tgo
+    print('acmd: ', acmd)
+    print("ZEV: ", ZEV)
     Fguide = solver.spacecraftMass*np.linalg.norm(acmd)
-    #p_cmd = np.matrix([[1.0],[0.0], [0.0],[0.0]])
-    ay = np.matmul(np.matrix([[0.0, 1.0, 0.0]]),acmd)
+    
+    if (np.matmul([[0.0, 0.0, 1.0]], acmd) < abs(solver.g)) or (zd_0 > -0.3):
+        Fguide = -solver.spacecraftMass*solver.g; 
+    elif(Fguide > solver.FEngineLim): 
+        Fguide = solver.FEngineLim
+    else:
+        pass 
+    print('Fguide: ', Fguide)
+    print('vel : ', zd_0)
+    ax = np.matmul(np.matrix([[1.0, 0.0, 0.0]]),acmd)
     az = np.matmul(np.matrix([[0.0, 0.0, 1.0]]),acmd)
-    ayz = np.matrix([[0.0],[ay], [az]])
-    angle1 = np.arctan2(ay,az)
-    angle2 = np.arctan2(acmd[0],np.linalg.norm(ayz))
-    print(np.cos(angle1/2))
-    p_cmd = np.matrix([[0.965926],[0.0],[0.258819],[0.0]])
+    axz = np.matrix([[ax],[az], [0.0]])
+    angle1 = np.arctan2(ax,az)
+    angle2 = np.arctan2(acmd[1],np.linalg.norm(axz))
+    
+    
+    Ry = np.matrix([[np.cos(-angle1), 0.0, np.sin(-angle1)],
+                    [0.0, 1.0, 0.0],
+                    [-np.sin(-angle1), 0.0, np.cos(-angle1)]])
+    Rx = np.matrix([[1.0, 0.0, 0.0],
+                    [0.0, np.cos(-angle2), -np.sin(-angle2)],
+                    [0.0, np.sin(-angle2),  np.cos(-angle2)]])
+    R = np.matmul(Ry,Rx)
+    #print(R)
+
+    #p_cmd = A2p(R)
+    # print(p_cmd)
+    #p_cmd = np.matrix([[0.965926],[0.0],[0.258819],[0.0]])
+    p_cmd = np.matrix([[1.0],[0.0],[0.0],[0.0]])
     return Fguide, p_cmd
 
 def RCSMix(Tcontrol): 

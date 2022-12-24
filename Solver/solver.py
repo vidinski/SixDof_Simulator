@@ -13,6 +13,7 @@ global attitude_kd
 global ly
 global lx
 global FrcsLim
+global FEngineLim
 global g 
 global spacecraftMass
 PI = np.pi
@@ -35,7 +36,7 @@ def solveSys(t,x):
     sd = np.transpose(x[0,7:10])
     w =  np.transpose(x[0,10:13])   
     thrust = np.transpose(x[0,13:20])
-
+    
     #_______________________________________________________________________
 
     #Joint Constraints Jacobian: 
@@ -47,28 +48,11 @@ def solveSys(t,x):
     F = np.matrix([[0.0],[0.0],[0.0]]) 
     T = np.matrix([[0.0],[0.0],[0.0]])
     bodies[1].BC_trans(s,p)
-    
+
     for i in range(1,5):
         forces[i].UpdateContact(bodies[1], sd, w)
-    ## THRUST CONTROL
-    # print(t)
-    # if ((t > 1.0)):
-    #     thrust1_cmd = -45.0
-    # else:
-    #     thrust1_cmd = 0.0 
-    # if ((t > 1.25)):
-    #     thrust2_cmd = -55.0
-    # else:
-    #     thrust2_cmd = 0.0 
-    # if ((t > 1.1)):
-    #     thrust3_cmd = -40.0
-    # else:
-    #     thrust3_cmd = 0.0 
-    # if ((t > 1.2)):
-    #     thrust4_cmd = -45.0
-    # else:
-    #     thrust4_cmd = 0.0  
 
+    # get controller values: 
     Fguide, p_cmd = cntrl.ZEM_ZEV_Controller(bodies[1], s, sd) 
     wr = np.matrix([[0.0],[0.0],[0.0]]);  
     Tcontrol = cntrl.AttitudeController(wr,p_cmd,w,p,
@@ -77,9 +61,6 @@ def solveSys(t,x):
                             attitude_kp, 
                             attitude_kd)  
 
-    #debug:
-    #Tcontrol = np.matrix([[0.0], [10.0],[0.0]]) 
-    #debug
 
 
     Ft = cntrl.RCSMix(Tcontrol)
@@ -152,7 +133,7 @@ def solveSys(t,x):
     #send array back to solver
     xdot = np.array(xdot)
     #print(thrust_cmd)
-    #print(t)
+    print("time: ",t, " sec")
     return xdot[0]
   
 
