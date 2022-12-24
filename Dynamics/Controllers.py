@@ -2,6 +2,7 @@ import numpy as np
 from Kinematics.kinematics import skewsym
 from Kinematics.kinematics import A2p
 from Solver import solver 
+from scipy.optimize import fsolve
 
 def AttitudeController(wr,pr,w,p,J,A,kp,kd): 
     # Partial Lyapunov Strictification: Smooth Angular 
@@ -25,14 +26,29 @@ def ZEM_ZEV_Controller(body, s, sd):
     # Feedback Guidance Algorithm
     rf = np.matrix([[0.0], [0.0],[0.0]]) #final desired position
     vf = np.matrix([[0.0], [0.0],[0.0]]) #final desired velocity
+    #r = np.matrix([[s[0]],[s[1]],[s[2]]])
+    #v = np.matrix([[sd[0]],[sd[1]],[sd[2]]])
     z_0 = s[2]
     zd_0 = sd[2]
-    tgo = (-zd_0 + np.sqrt(zd_0**2 - 4*0.5*solver.g*z_0))/(2*0.5*solver.g)
-    if tgo<0.0: 
-        tgo = (-zd_0 - np.sqrt(zd_0**2 - 4*0.5*solver.g*z_0))/(2*0.5*solver.g)
-    elif abs(tgo) < 0.1:
-        tgo = 0.1
+    # tgo = (-zd_0 + np.sqrt(zd_0**2 - 4*0.5*solver.g*z_0))/(2*0.5*solver.g)
+    # if tgo<0.0: 
+    #     tgo = (-zd_0 - np.sqrt(zd_0**2 - 4*0.5*solver.g*z_0))/(2*0.5*solver.g)
+    # elif abs(tgo) < 0.1:
+    #     tgo = 0.1
+
     gravVec = np.matrix([[0.0], [0.0],[solver.g]])
+    c2 = np.matmul(np.transpose(gravVec),gravVec) - 36.0*np.matmul(np.transpose(s),s)
+    c1 = np.matmul(np.transpose(s), sd)*24.0
+    c0 = np.matmul(np.transpose(sd), sd)*4.0
+    # f = lambda t: c2*t**2 + c1*t + c0
+    # tgo = fsolve(f, [-10.0, 10.0]) 
+    tgo = 0.1
+    # if tgo<0.0: 
+    #     tgo = (-zd_0 - np.sqrt(zd_0**2 - 4*0.5*solver.g*z_0))/(2*0.5*solver.g)
+    # elif abs(tgo) < 0.1:
+    #     tgo = 0.1
+
+    
     ZEM = rf - (s + sd*tgo + 0.5*gravVec*tgo**2)
     ZEV = vf - (sd + gravVec*tgo)
     #acmd = -s*6/tgo**2 -(sd + gravVec*tgo)*4/tgo - gravVec
