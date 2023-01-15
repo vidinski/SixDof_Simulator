@@ -29,8 +29,10 @@ PI = np.pi; cos45 = np.cos(PI/4.)
 solver.bodies = []
 solver.forces = []
 solver.tnb = 1
-solver.attitude_kp = -1500 #what did I do, this shouldn't be negative
-solver.attitude_kd = -500 #what did I do, this shouldn't be negative
+solver.attitude_kp = -1500
+solver.attitude_kd = -500
+solver.K_zem = 0.5
+solver.K_zev = 0.5
 solver.FrcsLim = 50 # force limit on rcs
 solver.FEngineLim = 1200 # force limit on  main engine thruster
 solver.g = -3.721; # Mars surface acceleration due to gravity 
@@ -38,7 +40,7 @@ solver.spacecraftMass = 100.0 # space craft mass
 
 dt = 0.1
 go = []
-tspan = [0., 20.0]
+tspan = [0., 3.0]
 tmr = np.arange(0.0, tspan[1], dt)
 
 ###########################################################################################
@@ -79,10 +81,10 @@ body1 = body_coordinates(0, #index
                                  [1.2,19,1.5],
                                  [0.5,1.5,25]]))#100.0*np.eye(3,3)) #inertia xx,yy,zz,xy,xz,yz 
 
-vel0 = np.matrix([0.0, 0.0, -30.0])
-w0 = np.matrix([0.0, 0.0, 0.0])
-# body1.BC_trans(np.matrix([[100.0],[0.0],[200.0]]),np.matrix([[0.965926],[0.0],[0.258819],[0.0]]))
-body1.BC_trans(np.matrix([[0.0],[0.0],[200.0]]),np.matrix([[1.0],[0.0],[0.0],[0.0]]))
+vel0 = np.matrix([0.0, 0.0, -60.0])
+w0 = np.matrix([0.1, 0.02, 0.0])
+body1.BC_trans(np.matrix([[100.0],[0.0],[200.0]]),np.matrix([[0.965926],[0.0],[0.258819],[0.0]]))
+#body1.BC_trans(np.matrix([[0.0],[0.0],[200.0]]),np.matrix([[1.0],[0.0],[0.0],[0.0]]))
 solver.bodies.append(body1)
 
 ###########################################################################################
@@ -282,9 +284,9 @@ def getPlaneData(frame_number,xx,yy,z):
               posi[1,0] = yy[j,jj]
               posi[2,0] = z[j, jj]
               Rposi = np.matmul(body1.A, posi)
-              xxx[j,jj] = Rposi[0,0]  #+body1.xyz_global_center[0,0] 
-              yyy[j,jj] = Rposi[1,0]  #+body1.xyz_global_center[1,0]
-              zz [j, jj] = Rposi[2,0] #+body1.xyz_global_center[2,0]
+              xxx[j,jj] = Rposi[0,0]  + body1.xyz_global_center[0,0] 
+              yyy[j,jj] = Rposi[1,0]  + body1.xyz_global_center[1,0]
+              zz [j, jj] = Rposi[2,0] + body1.xyz_global_center[2,0]
 
     xn = xxx
     yn = yyy
@@ -302,7 +304,7 @@ def getLegData(frame_number):
     posi = np.matrix([[0.0],[0.0],[0.0]])
     body1.BC_trans(x_anim[0:3,0],
                     x_anim[3:7,0])
-    ld = np.matmul(body1.A, np.transpose(body1.shape)) #+ body1.xyz_global_center
+    ld = np.matmul(body1.A, np.transpose(body1.shape)) + body1.xyz_global_center
     return ld
 
 def getThrustData(frame_number):
@@ -320,8 +322,8 @@ def getThrustData(frame_number):
         #
         td0n = np.matrix([[0.0, 0.0,0.0],
                         [0.0,0.0,0.0]])
-        td0n[0,0:3] = np.transpose(np.matmul(body1.A,solver.forces[i].position_on_body)) #+ body1.xyz_global_center
-        td0n[1,0:3] = np.transpose(np.matmul(body1.A,solver.forces[i].position_on_body+v_thrustn))
+        td0n[0,0:3] = np.transpose(np.matmul(body1.A,solver.forces[i].position_on_body) + body1.xyz_global_center )
+        td0n[1,0:3] = np.transpose(np.matmul(body1.A,solver.forces[i].position_on_body + v_thrustn) + body1.xyz_global_center)
 
         td.append(td0n)
         n = n +1
@@ -333,6 +335,7 @@ def getTrajData():
 def animate(frame_number,y,plot):
     ax.clear()
     ax2.clear()
+    
     time_text = ax.text(0.05, 0.9, 0.9, '', transform=ax.transAxes)
     time_text.set_text(time_template % (frame_number*dt))
     time_text.color = 'white'
@@ -373,6 +376,9 @@ def animate(frame_number,y,plot):
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
+    ax.set_xlim3d(x.y[0,frame_number]-2, x.y[0,frame_number] + 2)
+    ax.set_ylim3d(x.y[1,frame_number]-2, x.y[1,frame_number] + 2)
+    ax.set_zlim3d(x.y[2,frame_number]-2, x.y[2,frame_number] + 2)
     ax2.set_xlim3d(-100.0,100.0)
     ax2.set_ylim3d(-100.0,100.0)
     ax2.set_zlim3d(0.0, 200)

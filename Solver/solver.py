@@ -10,6 +10,8 @@ global forces
 global tnb
 global attitude_kp
 global attitude_kd
+global K_zem
+global K_zev
 global ly
 global lx
 global FrcsLim
@@ -53,15 +55,13 @@ def solveSys(t,x):
         forces[i].UpdateContact(bodies[1], sd, w)
 
     # get controller values: 
-    Fguide, p_cmd = cntrl.ZEM_ZEV_Controller(bodies[1], s, sd) 
+    Fguide, p_cmd = cntrl.ZEM_ZEV_Controller(bodies[1], s, sd, t) 
     wr = np.matrix([[0.0],[0.0],[0.0]]);  
     Tcontrol = cntrl.AttitudeController(wr,p_cmd,w,p,
                             bodies[1].inertia, 
                             bodies[1].A,
                             attitude_kp, 
                             attitude_kd)  
-
-
 
     Ft = cntrl.RCSMix(Tcontrol)
 
