@@ -1,6 +1,6 @@
 import numpy as np 
 from Kinematics.kinematics import skewsym
-from Kinematics.kinematics import A2p
+from Kinematics.kinematics import EulerAng2p
 from Solver import solver 
 from scipy.optimize import fsolve
 
@@ -24,6 +24,7 @@ def AttitudeController(wr,pr,w,p,J,A,kp,kd):
 def ZEM_ZEV_Controller(body, s, sd, time): 
     # Applications of Generalized Zero-Effort-Miss/Zero-Effort-Velocity
     # Feedback Guidance Algorithm
+    print('pos: ', s)
     rf = np.matrix([[0.0], [0.0],[0.0]]) #final desired position
     vf = np.matrix([[0.0], [0.0],[0.0]]) #final desired velocity
     z_0 = s[2]
@@ -54,17 +55,18 @@ def ZEM_ZEV_Controller(body, s, sd, time):
     # print('tmax:', tmax)
     # if abs(tgo) > tmax:
     #     tgo = tmax
-    tfinal = 15.0
+    tfinal = 8.0
     tgo = tfinal - time
     if tgo < 0.1 :
         tgo = 0.1
 
-    ZEM = rf - (s + sd*tgo + 0.5*gravVec*tgo**2)
+    ZEM = rf - (s + sd*tgo + 0.5*gravVec*tgo**2); ZEM[2] = 0.0
     ZEV = vf - (sd + gravVec*tgo)
     acmd = ZEM*6.0/tgo**2 + ZEV*2.0/tgo
-    #acmd = ZEV*2.0/tgo
-    # print('acmd: ', acmd)
-    # print("ZEV: ", ZEV)
+    #acmd = np.matrix([[0.0],[10.0],[10.0]])
+    print('acmd: ', acmd)
+    print("ZEV: ", ZEV)
+    print("ZEM: ", ZEM)
     # print('tgo: ', tgo)
     Fguide = solver.spacecraftMass*np.linalg.norm(acmd)
     
@@ -72,32 +74,43 @@ def ZEM_ZEV_Controller(body, s, sd, time):
     #     Fguide = -solver.spacecraftMass*solver.g; 
     if(Fguide > solver.FEngineLim): 
         Fguide = solver.FEngineLim
-    elif(z_0 < 0.2): 
+    if(z_0 < 1.0): 
         Fguide = 0.0
+        acmd = np.matrix([[0.0],[0.0],[1.0]])
     else:
         pass 
     print('Fguide: ', Fguide)
     print('vel z: ', zd_0)
     ax = np.matmul(np.matrix([[1.0, 0.0, 0.0]]),acmd)
+    ay = np.matmul(np.matrix([[0.0, 1.0, 0.0]]),acmd)
     az = np.matmul(np.matrix([[0.0, 0.0, 1.0]]),acmd)
-    axz = np.matrix([[ax],[az], [0.0]])
-    angle1 = np.arctan2(ax,az)
-    angle2 = np.arctan2(acmd[1],np.linalg.norm(axz))
+    #axz = np.matrix([[ax],[az], [0.0]])
+    axz = ax + az
+    axy = ax+ay
+    azy = ay+az
+    azy_mag = np.linalg.norm(azy)
+    axy_mag = np.linalg.norm(axy)
+    axz_mag = np.linalg.norm(axz)
+
+    # angley = np.arctan2(ax,az)
+    # anglex = np.arctan2(acmd[1],np.linalg.norm(axz))
+    anglez = 0.0 #np.arctan2(acmd[1],acmd[0])
+    angley = 0.0 #np.arctan2(acmd[2],acmd[0])
+    anglex = -0.5*np.pi + np.arctan2(axz_mag,acmd[1])
     
-    Ry = np.matrix([[np.cos(angle1), 0.0, np.sin(angle1)],
-                    [0.0, 1.0, 0.0],
-                    [-np.sin(angle1), 0.0, np.cos(angle1)]])
-    Rx = np.matrix([[1.0, 0.0, 0.0],
-                    [0.0, np.cos(angle2), -np.sin(angle2)],
-                    [0.0, np.sin(angle2),  np.cos(angle2)]])
-    R = np.matmul(Ry,Rx)
-    print('angle1: ',angle1)
-    print('angle2: ',angle2)
-    print('R: ', R)
-    p_cmd = A2p(np.transpose(R))
+    # Ry = np.matrix([[np.cos(angley), 0.0, np.sin(angley)],
+    #                 [0.0, 1.0, 0.0],
+    #                 [-np.sin(angley), 0.0, np.cos(angley)]])
+    # Rx = np.matrix([[1.0, 0.0, 0.0],
+    #                 [0.0, np.cos(anglex), -np.sin(anglex)],
+    #                 [0.0, np.sin(anglex),  np.cos(anglex)]])
+    # R = np.matmul(Ry,Rx)
+    print('angley: ',angley)
+    print('anglex: ',anglex)
+    p_cmd = EulerAng2p(anglex, angley, anglez)
     # print('p_cmd', p_cmd)
     # p_cmd = np.matrix([[0.965926],[0.0],[0.258819],[0.0]])
-    p_cmd = np.matrix([[1.0],[0.0],[0.0],[0.0]])
+    #p_cmd = np.matrix([[1.0],[0.0],[0.0],[0.0]])
     return Fguide, p_cmd
 
 def RCSMix(Tcontrol): 

@@ -133,6 +133,7 @@ def solveSys(t,x):
     #send array back to solver
     xdot = np.array(xdot)
     #print(thrust_cmd)
+    print("acceleration: ",sdd)
     print("time: ",t, " sec")
     return xdot[0]
   

@@ -1,5 +1,5 @@
 import numpy as np 
-# import matplotlib
+import matplotlib
 # matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -29,18 +29,18 @@ PI = np.pi; cos45 = np.cos(PI/4.)
 solver.bodies = []
 solver.forces = []
 solver.tnb = 1
-solver.attitude_kp = -1500
-solver.attitude_kd = -500
+solver.attitude_kp = -3e+5#-1500
+solver.attitude_kd = -1e+4#-500
 solver.K_zem = 0.5
 solver.K_zev = 0.5
-solver.FrcsLim = 50 # force limit on rcs
+solver.FrcsLim = 100 # force limit on rcs
 solver.FEngineLim = 1200 # force limit on  main engine thruster
 solver.g = -3.721; # Mars surface acceleration due to gravity 
 solver.spacecraftMass = 100.0 # space craft mass
 
 dt = 0.1
 go = []
-tspan = [0., 3.0]
+tspan = [0., 6.0]
 tmr = np.arange(0.0, tspan[1], dt)
 
 ###########################################################################################
@@ -82,9 +82,9 @@ body1 = body_coordinates(0, #index
                                  [0.5,1.5,25]]))#100.0*np.eye(3,3)) #inertia xx,yy,zz,xy,xz,yz 
 
 vel0 = np.matrix([0.0, 0.0, -60.0])
-w0 = np.matrix([0.1, 0.02, 0.0])
-body1.BC_trans(np.matrix([[100.0],[0.0],[200.0]]),np.matrix([[0.965926],[0.0],[0.258819],[0.0]]))
-#body1.BC_trans(np.matrix([[0.0],[0.0],[200.0]]),np.matrix([[1.0],[0.0],[0.0],[0.0]]))
+w0 = np.matrix([0.0, 0.0, 0.0])
+#body1.BC_trans(np.matrix([[100.0],[0.0],[200.0]]),np.matrix([[0.965926],[0.0],[0.258819],[0.0]]))
+body1.BC_trans(np.matrix([[0.0],[50.0],[200.0]]),np.matrix([[1.0],[0.0],[0.0],[0.0]]))
 solver.bodies.append(body1)
 
 ###########################################################################################
@@ -149,7 +149,7 @@ solver.forces.append(force4)
 index = index + 1
 engine_loc_body = np.matrix([[0.5],[0.0],[0.0]])
 u_thrust = np.matrix([[0.0],[0.0],[1.0]])
-tau_thrust = 0.05
+tau_thrust = 0.01
 force5 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust)
 solver.forces.append(force5)
 
@@ -297,6 +297,15 @@ def getPlaneData(frame_number,xx,yy,z):
 def getPointData(frame_number):
     #force1.Update() 
     fp  = np.matrix([[0.0], [0.0],[0.0]]) 
+    # x_anim =  np.transpose(np.matrix(x.y[:,frame_number]))
+    # body1.BC_trans(x_anim[0:3,0],
+    #                 x_anim[3:7,0])
+    # time_text = ax.text(0.05 + body1.xyz_global_center[0], 
+    #                     0.9 + body1.xyz_global_center[1], 
+    #                     0.9 + body1.xyz_global_center[2], 
+    #                     '', transform=ax.transAxes)
+    # time_text.set_text(time_template % (frame_number*dt))
+    time_text.color = 'white'
     return fp
 
 def getLegData(frame_number):
@@ -336,9 +345,7 @@ def animate(frame_number,y,plot):
     ax.clear()
     ax2.clear()
     
-    time_text = ax.text(0.05, 0.9, 0.9, '', transform=ax.transAxes)
-    time_text.set_text(time_template % (frame_number*dt))
-    time_text.color = 'white'
+
     xn, yn, zn = getPlaneData(frame_number,xx,yy,z)
     fp = getPointData(frame_number)
     ld = getLegData(frame_number)
