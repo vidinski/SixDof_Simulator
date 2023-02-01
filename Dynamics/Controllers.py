@@ -55,13 +55,13 @@ def ZEM_ZEV_Controller(body, s, sd, time):
     # print('tmax:', tmax)
     # if abs(tgo) > tmax:
     #     tgo = tmax
-    tfinal = 8.0
+    tfinal = 10.0
     tgo = tfinal - time
     if tgo < 0.1 :
         tgo = 0.1
 
     ZEM = rf - (s + sd*tgo + 0.5*gravVec*tgo**2); ZEM[2] = 0.0
-    ZEV = vf - (sd + gravVec*tgo)
+    ZEV = 0.0 #vf - (sd + gravVec*tgo)
     acmd = ZEM*6.0/tgo**2 + ZEV*2.0/tgo
     #acmd = np.matrix([[0.0],[10.0],[10.0]])
     print('acmd: ', acmd)
@@ -95,7 +95,8 @@ def ZEM_ZEV_Controller(body, s, sd, time):
     # angley = np.arctan2(ax,az)
     # anglex = np.arctan2(acmd[1],np.linalg.norm(axz))
     anglez = 0.0 #np.arctan2(acmd[1],acmd[0])
-    angley = 0.0 #np.arctan2(acmd[2],acmd[0])
+    angley = 0.5*np.pi - np.arctan2(acmd[2],acmd[0])
+    # anglex = -(0.5*np.pi - np.arctan2(azy_mag,acmd[1]))
     anglex = -0.5*np.pi + np.arctan2(axz_mag,acmd[1])
     
     # Ry = np.matrix([[np.cos(angley), 0.0, np.sin(angley)],

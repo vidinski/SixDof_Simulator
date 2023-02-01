@@ -29,18 +29,19 @@ PI = np.pi; cos45 = np.cos(PI/4.)
 solver.bodies = []
 solver.forces = []
 solver.tnb = 1
-solver.attitude_kp = -3e+5#-1500
-solver.attitude_kd = -1e+4#-500
+solver.attitude_kp = -3000 #-3e+4
+solver.attitude_kd = -1000  #-1e+3
 solver.K_zem = 0.5
 solver.K_zev = 0.5
 solver.FrcsLim = 100 # force limit on rcs
 solver.FEngineLim = 1200 # force limit on  main engine thruster
 solver.g = -3.721; # Mars surface acceleration due to gravity 
 solver.spacecraftMass = 100.0 # space craft mass
+solver.LatchTGO = False 
 
 dt = 0.1
 go = []
-tspan = [0., 6.0]
+tspan = [0., 8.0]
 tmr = np.arange(0.0, tspan[1], dt)
 
 ###########################################################################################
@@ -81,10 +82,10 @@ body1 = body_coordinates(0, #index
                                  [1.2,19,1.5],
                                  [0.5,1.5,25]]))#100.0*np.eye(3,3)) #inertia xx,yy,zz,xy,xz,yz 
 
-vel0 = np.matrix([0.0, 0.0, -60.0])
+vel0 = np.matrix([0.0, 0.0, -20.0])
 w0 = np.matrix([0.0, 0.0, 0.0])
 #body1.BC_trans(np.matrix([[100.0],[0.0],[200.0]]),np.matrix([[0.965926],[0.0],[0.258819],[0.0]]))
-body1.BC_trans(np.matrix([[0.0],[50.0],[200.0]]),np.matrix([[1.0],[0.0],[0.0],[0.0]]))
+body1.BC_trans(np.matrix([[50.0],[50.0],[200.0]]),np.matrix([[1.0],[0.0],[0.0],[0.0]]))
 solver.bodies.append(body1)
 
 ###########################################################################################
@@ -149,7 +150,7 @@ solver.forces.append(force4)
 index = index + 1
 engine_loc_body = np.matrix([[0.5],[0.0],[0.0]])
 u_thrust = np.matrix([[0.0],[0.0],[1.0]])
-tau_thrust = 0.01
+tau_thrust = 0.05
 force5 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust)
 solver.forces.append(force5)
 
