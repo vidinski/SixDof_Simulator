@@ -62,3 +62,7 @@ def EulerAng2p(anglex, angley, anglez):
         print('p ', p)
 
         return p
+
+# def pointThisWay(vec): 
+#         eulerAng = 0.0; 
+#         return eulerAng
