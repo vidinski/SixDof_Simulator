@@ -24,64 +24,30 @@ def AttitudeController(wr,pr,w,p,J,A,kp,kd):
 def ZEM_ZEV_Controller(body, s, sd, time): 
     # Applications of Generalized Zero-Effort-Miss/Zero-Effort-Velocity
     # Feedback Guidance Algorithm
+
     print('pos: ', s)
     rf = np.matrix([[0.0], [0.0],[0.0]]) #final desired position
-    vf = np.matrix([[0.0], [0.0],[0.0]]) #final desired velocity
+    vf = np.matrix([[0.0], [0.0],[-0.3]]) #final desired velocity
     z_0 = s[2]
     zd_0 = sd[2]
-    # tgo = (-zd_0 + np.sqrt(zd_0**2 - 4*0.5*solver.g*z_0))/(2*0.5*solver.g)
-    # if tgo<0.0: 
-    #     tgo = (-zd_0 - np.sqrt(zd_0**2 - 4*0.5*solver.g*z_0))/(2*0.5*solver.g)
-    # elif abs(tgo) < 0.1:
-    #     tgo = 0.1
+
+    tgo = tgoEstimator(time)
 
     gravVec = np.matrix([[0.0], [0.0],[solver.g]])
-    # c4 = np.matmul(np.transpose(gravVec),gravVec) 
-    # c3 = 0.0
-    # c2 = -4.0*np.matmul(np.transpose(sd), sd)
-    # c1 = -24.0*np.matmul(np.transpose(s), sd)  
-    # c0 = -36.0*np.matmul(np.transpose(s),s)
-    # print('c0:', c0)
-    # f = lambda t: c4[0,0]*t**4 + c2[0,0]*t**2 + c1[0,0]*t + c0[0,0]
-    # tgo2 = fsolve(f, [-100.0, -50.0, 50.0, 100.0]) 
-    # tgo = 0.0
-    # for tgos in tgo2: 
-    #     if tgos>0.0: 
-    #         tgo = tgos
-    #         break
-    # print('tgo2: ', tgo2)
- 
-    # tmax = -3*z_0/zd_0
-    # print('tmax:', tmax)
-    # if abs(tgo) > tmax:
-    #     tgo = tmax
-    tfinal = 8.0
-    tgo = tfinal - time
-    if tgo < 0.1 :
-        tgo = 0.1
 
     #ZEM = rf - (s + sd*tgo + 0.5*gravVec*tgo**2); ZEM[2] = 0.0
     #ZEV = vf - (sd + gravVec*tgo)
     ZEM = rf - (s + sd*tgo); ZEM[2] = 0.0
     ZEV = vf - sd
 
-    acmd = ZEM*6.0/tgo**2 + ZEV*2.0/tgo
-    #acmd = np.matrix([[0.0],[10.0],[10.0]])
+    acmd = ZEV*2.0/tgo #ZEM*6.0/tgo**2 + ZEV*2.0/tgo
     print('acmd: ', acmd)
     print("ZEV: ", ZEV)
     print("ZEM: ", ZEM)
     # print('tgo: ', tgo)
     Fguide = solver.spacecraftMass*np.linalg.norm(acmd)
-    
-    # if (np.matmul([[0.0, 0.0, 1.0]], acmd) < abs(solver.g)): #or (zd_0 > -0.3):
-    #     Fguide = -solver.spacecraftMass*solver.g; 
-    if(Fguide > solver.FEngineLim): 
-        Fguide = solver.FEngineLim
-    if(z_0 < 1.0): 
-        Fguide = 0.0
-        acmd = np.matrix([[0.0],[0.0],[1.0]])
-    else:
-        pass 
+    Fguide, acmd = limitEngine(Fguide, acmd,z_0)
+
     print('Fguide: ', Fguide)
     print('vel z: ', zd_0)
     ax = np.matmul(np.matrix([[1.0, 0.0, 0.0]]),acmd)
@@ -94,27 +60,12 @@ def ZEM_ZEV_Controller(body, s, sd, time):
     azy_mag = np.linalg.norm(azy)
     axy_mag = np.linalg.norm(axy)
     axz_mag = np.linalg.norm(axz)
-
-    # angley = np.arctan2(ax,az)
-    # anglex = np.arctan2(acmd[1],np.linalg.norm(axz))
-    anglez = 0.0 #np.arctan2(acmd[1],acmd[0])
+    anglez = 0.0
     angley = 0.5*np.pi - np.arctan2(acmd[2],acmd[0])
-    # anglex = -(0.5*np.pi - np.arctan2(azy_mag,acmd[1]))
     anglex = -0.5*np.pi + np.arctan2(axz_mag,acmd[1])
-    
-    # Ry = np.matrix([[np.cos(angley), 0.0, np.sin(angley)],
-    #                 [0.0, 1.0, 0.0],
-    #                 [-np.sin(angley), 0.0, np.cos(angley)]])
-    # Rx = np.matrix([[1.0, 0.0, 0.0],
-    #                 [0.0, np.cos(anglex), -np.sin(anglex)],
-    #                 [0.0, np.sin(anglex),  np.cos(anglex)]])
-    # R = np.matmul(Ry,Rx)
     print('angley: ',angley)
     print('anglex: ',anglex)
     p_cmd = EulerAng2p(anglex, angley, anglez)
-    # print('p_cmd', p_cmd)
-    # p_cmd = np.matrix([[0.965926],[0.0],[0.258819],[0.0]])
-    #p_cmd = np.matrix([[1.0],[0.0],[0.0],[0.0]])
     return Fguide, p_cmd
 
 def RCSMix(Tcontrol): 
@@ -141,3 +92,53 @@ def RCSMix(Tcontrol):
     #Frcs = np.matrix([[0.0],[0.0], [0.0],[0.0]])
     #print(Frcs)
     return Frcs
+
+def tgoEstimator(time): 
+    # c4 = np.matmul(np.transpose(gravVec),gravVec) 
+    # c3 = 0.0
+    # c2 = -4.0*np.matmul(np.transpose(sd), sd)
+    # c1 = -24.0*np.matmul(np.transpose(s), sd)  
+    # c0 = -36.0*np.matmul(np.transpose(s),s)
+    # print('c0:', c0)
+    # f = lambda t: c4[0,0]*t**4 + c2[0,0]*t**2 + c1[0,0]*t + c0[0,0]
+    # tgo2 = fsolve(f, [-100.0, -50.0, 50.0, 100.0]) 
+    # tgo = 0.0
+    # for tgos in tgo2: 
+    #     if tgos>0.0: 
+    #         tgo = tgos
+    #         break
+    # print('tgo2: ', tgo2)
+ 
+    # tmax = -3*z_0/zd_0
+    # print('tmax:', tmax)
+    # if abs(tgo) > tmax:
+    #     tgo = tmax
+
+    # tgo = (-zd_0 + np.sqrt(zd_0**2 - 4*0.5*solver.g*z_0))/(2*0.5*solver.g)
+    # if tgo<0.0: 
+    #     tgo = (-zd_0 - np.sqrt(zd_0**2 - 4*0.5*solver.g*z_0))/(2*0.5*solver.g)
+    # elif abs(tgo) < 0.1:
+    #     tgo = 0.1
+
+    tfinal = 10.0
+    tgo = tfinal - time
+    if tgo < 0.1 :
+        tgo = 0.1
+    return tgo
+
+def limitEngine(Fguide, acmd,z_0): 
+        gravVec = np.matrix([[0.0], [0.0],[solver.g]]); 
+        if (np.linalg.norm(acmd) < abs(solver.g)): #or (zd_0 > -0.3):
+            Fguide = -solver.spacecraftMass*solver.g
+            acmd = -gravVec
+        if(np.linalg.norm(Fguide) > solver.FEngineLim): 
+            Fguide = solver.FEngineLim
+            acmd = Fguide/solver.spacecraftMass*1/np.linalg.norm(acmd)*acmd
+        if(z_0 < 1.0): 
+            Fguide = 0.0
+            acmd = np.matrix([[0.0],[0.0],[1.0]])
+        else:
+            pass
+        
+        return Fguide, acmd
+

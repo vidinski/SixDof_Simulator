@@ -41,7 +41,7 @@ solver.LatchTGO = False
 
 dt = 0.1
 go = []
-tspan = [0., 8.0]
+tspan = [0., 9.0]
 tmr = np.arange(0.0, tspan[1], dt)
 
 ###########################################################################################
@@ -82,7 +82,7 @@ body1 = body_coordinates(0, #index
                                  [1.2,19,1.5],
                                  [0.5,1.5,25]]))#100.0*np.eye(3,3)) #inertia xx,yy,zz,xy,xz,yz 
 
-vel0 = np.matrix([-10.0, -10.0, -40.0])
+vel0 = np.matrix([-20.0, -20.0, -40.0])
 w0 = np.matrix([0.0, 0.0, 0.0])
 #body1.BC_trans(np.matrix([[100.0],[0.0],[200.0]]),np.matrix([[0.965926],[0.0],[0.258819],[0.0]]))
 body1.BC_trans(np.matrix([[50.0],[50.0],[200.0]]),np.matrix([[1.0],[0.0],[0.0],[0.0]]))
