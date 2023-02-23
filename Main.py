@@ -219,9 +219,15 @@ x0 = np.concatenate((x0,w0), axis = 1)
 x0 = np.concatenate((x0,np.zeros([1,7])), axis = 1)
 #x0 = np.concatenate((x0,[[0.0]]), axis = 1)
 
+###### DATA LOGING #########
+logHead = "POSx POSy POSz  VELx VELy VELz \n"
+solver.textFile = open('test.txt','w')
+solver.textFile.write(logHead)
+##### END DATA LOGING #####
+
 x0 = np.array(x0[0]) 
 x = integrate.solve_ivp(solver.solveSys, tspan, x0[0], method='RK45',t_eval = tmr)
-
+solver.textFile.close()
 
 ###########################################################################################
 					#ANIMATION

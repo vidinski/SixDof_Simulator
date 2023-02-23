@@ -1,4 +1,7 @@
 *.pyc
 */__pycache__
 Dynamics/zForcesTypes.py
+DataLogging/test.txt
+DataLogging/printTest.py
+test.txt
 *.mp4

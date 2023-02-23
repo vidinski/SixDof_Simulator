@@ -4,6 +4,7 @@ import numpy as np
 from Kinematics.body_coordinates import body_coordinates #, skewsym
 from Kinematics.kinematics import skewsym
 import Dynamics.Controllers as cntrl
+import DataLogging.printResults as LogData
 
 global bodies
 global forces
@@ -18,6 +19,7 @@ global FrcsLim
 global FEngineLim
 global g 
 global spacecraftMass
+global textFile
 PI = np.pi
 
 def solveSys(t,x):
@@ -135,6 +137,12 @@ def solveSys(t,x):
     #print(thrust_cmd)
     print("acceleration: ",sdd)
     print("time: ",t, " sec")
+
+    #log data
+    #pos
+    LogData.writeToFile(np.transpose(s))
+    LogData.writeToFile(np.transpose(sd))
+    textFile.write('\n')
     return xdot[0]
   
 
