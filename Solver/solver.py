@@ -140,9 +140,14 @@ def solveSys(t,x):
 
     #log data
     #pos
+    textFile.write(str(t))
+    textFile.write('\t')
     LogData.writeToFile(np.transpose(s))
+    textFile.write('\t')
+    #vel
     LogData.writeToFile(np.transpose(sd))
     textFile.write('\n')
+
     return xdot[0]
   
 

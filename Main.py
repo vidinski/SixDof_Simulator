@@ -41,7 +41,7 @@ solver.LatchTGO = False
 
 dt = 0.1
 go = []
-tspan = [0., 9.0]
+tspan = [0., 20.0]
 tmr = np.arange(0.0, tspan[1], dt)
 
 ###########################################################################################
@@ -151,42 +151,48 @@ index = index + 1
 engine_loc_body = np.matrix([[0.5],[0.0],[0.0]])
 u_thrust = np.matrix([[0.0],[0.0],[1.0]])
 tau_thrust = 0.05
-force5 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust)
+forceLim = solver.FrcsLim
+force5 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust, forceLim)
 solver.forces.append(force5)
 
 #rcs 2
 index = index + 1
 engine_loc_body = np.matrix([[0.0],[0.5],[0.0]])
 u_thrust = np.matrix([[0.0],[0.0],[1.0]])
-force6 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust)
+forceLim = solver.FrcsLim
+force6 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust, forceLim)
 solver.forces.append(force6)
 
 #rcs 3 
 index = index + 1
 engine_loc_body = np.matrix([[-0.5],[0.0],[0.0]])
 u_thrust = np.matrix([[0.0],[0.0],[1.0]])
-force7 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust)
+forceLim = solver.FrcsLim
+force7 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust, forceLim)
 solver.forces.append(force7)
 
 #rcs 4
 index = index + 1
 engine_loc_body = np.matrix([[0.0],[-0.5],[0.0]])
 u_thrust = np.matrix([[0.0],[0.0],[1.0]])
-force8 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust)
+forceLim = solver.FrcsLim
+force8 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust, forceLim)
 solver.forces.append(force8)
 
 #rcs 5
 index = index + 1
 engine_loc_body = np.matrix([[0.5],[0.0],[0.0]])
 u_thrust = np.matrix([[0.0],[1.0],[0.0]])
-force9 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust)
+forceLim = solver.FrcsLim
+force9 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust, forceLim)
 solver.forces.append(force9)
 
 #rcs 6
 index = index + 1
 engine_loc_body = np.matrix([[-0.5],[0.0],[0.0]])
 u_thrust = np.matrix([[0.0],[1.0],[0.0]])
-force10 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust)
+forceLim = solver.FrcsLim
+force10 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust, forceLim)
 solver.forces.append(force10)
 
 #Main engine
@@ -194,7 +200,8 @@ index = index + 1
 engine_loc_body =  np.matrix([[0.0],[0.0],[0.0]])
 u_thrust = np.matrix([[0.0],[0.0],[1.0]])
 tau_thrust = 0.1
-force11 = ForcesTypes.PropulsionForce(index, engine_loc_body, u_thrust, tau_thrust)
+forceLim = solver.FEngineLim
+force11 = ForcesTypes.PropulsionForce(index, engine_loc_body, u_thrust, tau_thrust,forceLim)
 solver.forces.append(force11)
 
 ###########################################################################################
@@ -220,7 +227,7 @@ x0 = np.concatenate((x0,np.zeros([1,7])), axis = 1)
 #x0 = np.concatenate((x0,[[0.0]]), axis = 1)
 
 ###### DATA LOGING #########
-logHead = "POSx POSy POSz  VELx VELy VELz \n"
+logHead = "TIME\tPOSx\tPOSy\tPOSz\tVELx\tVELy\tVELz\n" #great insult
 solver.textFile = open('test.txt','w')
 solver.textFile.write(logHead)
 ##### END DATA LOGING #####
@@ -334,7 +341,7 @@ def getThrustData(frame_number):
 
         solver.forces[i].UpdatePropulsion(body1, thrustn)
 
-        v_thrustn = -1/solver.FrcsLim*solver.forces[i].force_mag*solver.forces[i].u_propulsion
+        v_thrustn = -1/solver.forces[i].forceLim*solver.forces[i].force_mag*solver.forces[i].u_propulsion
         #
         td0n = np.matrix([[0.0, 0.0,0.0],
                         [0.0,0.0,0.0]])

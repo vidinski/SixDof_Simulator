@@ -47,10 +47,11 @@ class ContactForce(ForceBase):
             #self.UpdateBasic(body)
 
 class PropulsionForce(ForceBase): 
-        def __init__ (self,index, position_on_body, u_propulsion, tau):
+        def __init__ (self,index, position_on_body, u_propulsion, tau, forceLim):
             super().__init__(index, position_on_body)
             self.u_propulsion = u_propulsion
             self.tau = tau
+            self.forceLim = forceLim
         def UpdatePropulsion(self, body, thrust):
             self.cg_global = body.xyz_global_center  
             self.A = body.A

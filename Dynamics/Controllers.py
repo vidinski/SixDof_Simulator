@@ -31,7 +31,7 @@ def ZEM_ZEV_Controller(body, s, sd, time):
     z_0 = s[2]
     zd_0 = sd[2]
 
-    tgo = tgoEstimator(time)
+    tgo = tgoEstimator(time, z_0, zd_0)
 
     gravVec = np.matrix([[0.0], [0.0],[solver.g]])
 
@@ -82,18 +82,16 @@ def RCSMix(Tcontrol):
             F123[i] = np.sign(f)*flim
         i = i+1
 
-    Frcs[0] = -0.5*F123[1] #about y
+    Frcs[0] = -0.5*F123[1] 
     Frcs[1] = 0.5*F123[0]
-    Frcs[2] = 0.5*F123[1] #about y
+    Frcs[2] = 0.5*F123[1] 
     Frcs[3] = -0.5*F123[0]
     Frcs[4] =  0.5*F123[2]
     Frcs[5] = -0.5*F123[2]
-    #print(Frcs)
-    #Frcs = np.matrix([[0.0],[0.0], [0.0],[0.0]])
-    #print(Frcs)
+
     return Frcs
 
-def tgoEstimator(time): 
+def tgoEstimator(time, z_0, zd_0): 
     # c4 = np.matmul(np.transpose(gravVec),gravVec) 
     # c3 = 0.0
     # c2 = -4.0*np.matmul(np.transpose(sd), sd)
@@ -114,16 +112,16 @@ def tgoEstimator(time):
     # if abs(tgo) > tmax:
     #     tgo = tmax
 
-    # tgo = (-zd_0 + np.sqrt(zd_0**2 - 4*0.5*solver.g*z_0))/(2*0.5*solver.g)
-    # if tgo<0.0: 
-    #     tgo = (-zd_0 - np.sqrt(zd_0**2 - 4*0.5*solver.g*z_0))/(2*0.5*solver.g)
-    # elif abs(tgo) < 0.1:
-    #     tgo = 0.1
-
-    tfinal = 10.0
-    tgo = tfinal - time
-    if tgo < 0.1 :
+    tgo = (-zd_0 + np.sqrt(zd_0**2 - 4*0.5*solver.g*z_0))/(2*0.5*solver.g)
+    if tgo<0.0: 
+        tgo = (-zd_0 - np.sqrt(zd_0**2 - 4*0.5*solver.g*z_0))/(2*0.5*solver.g)
+    elif abs(tgo) < 0.1:
         tgo = 0.1
+
+    # tfinal = 15.0
+    # tgo = tfinal - time
+    # if tgo < 0.1 :
+    #     tgo = 0.1
     return tgo
 
 def limitEngine(Fguide, acmd,z_0): 
