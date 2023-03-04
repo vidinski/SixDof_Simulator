@@ -21,6 +21,7 @@ import numpy as np
 from mpl_toolkits.mplot3d import Axes3D 
 import mpl_toolkits.mplot3d.art3d as art3d
 import matplotlib.animation as animation
+import argparse
 #https://stackoverflow.com/questions/3461869/plot-a-plane-based-on-a-normal-vector-and-a-point-in-matlab-or-matplotlib/23006541
 
 PI = np.pi; cos45 = np.cos(PI/4.)
@@ -28,7 +29,7 @@ PI = np.pi; cos45 = np.cos(PI/4.)
 #global
 solver.bodies = []
 solver.forces = []
-solver.tnb = 1
+solver.tnb = 1 #total number of bodies
 solver.attitude_kp = -3000 #-3e+4
 solver.attitude_kd = -1000  #-1e+3
 solver.K_zem = 0.5
@@ -38,10 +39,30 @@ solver.FEngineLim = 1200 # force limit on  main engine thruster
 solver.g = -3.721; # Mars surface acceleration due to gravity 
 solver.spacecraftMass = 100.0 # space craft mass
 solver.LatchTGO = False 
+tf = 1.0 #final time
+rn = 1 #run number
+
+###########################################################################################
+					#TAKE INPUTS
+###########################################################################################
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--finalTime", help=" final time", type=float)
+parser.add_argument("--run", help="run number", type=int)
+args = parser.parse_args()
+if args.finalTime:
+    tf = args.finalTime
+if args.run:
+    rn = args.run
+
+###########################################################################################
+					#SETUP VARIABLES
+###########################################################################################
 
 dt = 0.1
-go = []
-tspan = [0., 20.0]
+# go = []
+# tspan = [0., 10.0]
+tspan = [0., tf]
 tmr = np.arange(0.0, tspan[1], dt)
 
 ###########################################################################################
@@ -84,8 +105,8 @@ body1 = body_coordinates(0, #index
 
 vel0 = np.matrix([-20.0, -20.0, -40.0])
 w0 = np.matrix([0.0, 0.0, 0.0])
-#body1.BC_trans(np.matrix([[100.0],[0.0],[200.0]]),np.matrix([[0.965926],[0.0],[0.258819],[0.0]]))
-body1.BC_trans(np.matrix([[50.0],[50.0],[200.0]]),np.matrix([[1.0],[0.0],[0.0],[0.0]]))
+body1.BC_trans(np.matrix([[100.0],[0.0],[200.0]]),np.matrix([[0.965926],[0.0],[0.258819],[0.0]]))
+#body1.BC_trans(np.matrix([[50.0],[50.0],[100.0]]),np.matrix([[1.0],[0.0],[0.0],[0.0]]))
 solver.bodies.append(body1)
 
 ###########################################################################################
@@ -228,7 +249,9 @@ x0 = np.concatenate((x0,np.zeros([1,7])), axis = 1)
 
 ###### DATA LOGING #########
 logHead = "TIME\tPOSx\tPOSy\tPOSz\tVELx\tVELy\tVELz\n" #great insult
-solver.textFile = open('test.txt','w')
+# solver.textFile = open('test.txt','w')
+fileName = 'output00' + str(rn)+ '.txt'
+solver.textFile = open(fileName,'w')
 solver.textFile.write(logHead)
 ##### END DATA LOGING #####
 
@@ -482,7 +505,7 @@ plot.append(plot12)
 plt.rcParams["figure.figsize"] = [14.00, 7.0]
 ani = animation.FuncAnimation(fig, animate, frn, fargs=(y,plot), interval = 1000/10) #interval=1000/fps)
 
-plt.show()
+#plt.show()
 
 # Set up formatting for the movie files
 # Writer = animation.writers['ffmpeg']
