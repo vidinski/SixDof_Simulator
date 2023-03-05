@@ -20,6 +20,9 @@ global FEngineLim
 global g 
 global spacecraftMass
 global textFile
+global holdAcmdZ
+global vf
+global rf
 PI = np.pi
 
 def solveSys(t,x):

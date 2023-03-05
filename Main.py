@@ -30,16 +30,19 @@ PI = np.pi; cos45 = np.cos(PI/4.)
 solver.bodies = []
 solver.forces = []
 solver.tnb = 1 #total number of bodies
-solver.attitude_kp = -3000 #-3e+4
-solver.attitude_kd = -1000  #-1e+3
-solver.K_zem = 0.5
-solver.K_zev = 0.5
+solver.attitude_kp = -3000 #-3000 #-3e+4
+solver.attitude_kd = -1000 #-1000  #-1e+3
+solver.K_zem = 1.0
+solver.K_zev = 5.0
 solver.FrcsLim = 100 # force limit on rcs
-solver.FEngineLim = 1200 # force limit on  main engine thruster
+solver.FEngineLim = 2000 #1200 # force limit on  main engine thruster
 solver.g = -3.721; # Mars surface acceleration due to gravity 
 solver.spacecraftMass = 100.0 # space craft mass
 solver.LatchTGO = False 
-tf = 1.0 #final time
+solver.rf = np.matrix([[0.0], [0.0],[40.0]]) #desired position above target landing zone before landing
+solver.vf = np.matrix([[0.0], [0.0],[-0.3]]) #final desired velocity
+solver.holdAcmdZ = 0.001; 
+tf = 25.0 #final time
 rn = 1 #run number
 
 ###########################################################################################
@@ -103,7 +106,7 @@ body1 = body_coordinates(0, #index
                                  [1.2,19,1.5],
                                  [0.5,1.5,25]]))#100.0*np.eye(3,3)) #inertia xx,yy,zz,xy,xz,yz 
 
-vel0 = np.matrix([-20.0, -20.0, -40.0])
+vel0 = np.matrix([-20.0, 0.0, -40.0])
 w0 = np.matrix([0.0, 0.0, 0.0])
 body1.BC_trans(np.matrix([[100.0],[0.0],[200.0]]),np.matrix([[0.965926],[0.0],[0.258819],[0.0]]))
 #body1.BC_trans(np.matrix([[50.0],[50.0],[100.0]]),np.matrix([[1.0],[0.0],[0.0],[0.0]]))
@@ -505,7 +508,7 @@ plot.append(plot12)
 plt.rcParams["figure.figsize"] = [14.00, 7.0]
 ani = animation.FuncAnimation(fig, animate, frn, fargs=(y,plot), interval = 1000/10) #interval=1000/fps)
 
-#plt.show()
+plt.show()
 
 # Set up formatting for the movie files
 # Writer = animation.writers['ffmpeg']
