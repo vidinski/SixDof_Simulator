@@ -28,7 +28,6 @@ def ZEM_ZEV_Controller(body, s, sd, time):
     
     gravVec = np.matrix([[0.0], [0.0],[solver.g]])
 
-    print('pos: ', s)
     z_0 = s[2]
     zd_0 = sd[2]
     ZEM = np.matrix([[0.0], [0.0],[0.0]])
@@ -41,24 +40,17 @@ def ZEM_ZEV_Controller(body, s, sd, time):
         holdZcmd = np.matrix([[0.0], [0.0],[solver.holdAcmdZ]])
         # acmd = ZEM*6.0/tgo**2 + holdZcmd 
         acmd = ZEM*6.0/tgo**2 - gravVec
-        print('ZEM: ', ZEM)
     else: 
         ZEV = solver.vf - sd
         acmd = solver.K_zev * ZEV*2.0/tgo
         solver.holdAcmdZ = acmd[2,0]; 
-    
-    print('acmd: ', acmd)
-    # print("ZEV: ", ZEV)
-    print('tgo: ', tgo)
+
     Fguide = solver.spacecraftMass*np.linalg.norm(acmd)
     Fguide, acmd = limitEngine(Fguide, acmd,z_0)
 
-    # print('Fguide: ', Fguide)
-    # print('vel z: ', zd_0)
     ax = np.matmul(np.matrix([[1.0, 0.0, 0.0]]),acmd)
     ay = np.matmul(np.matrix([[0.0, 1.0, 0.0]]),acmd)
     az = np.matmul(np.matrix([[0.0, 0.0, 1.0]]),acmd)
-    #axz = np.matrix([[ax],[az], [0.0]])
     axz = ax + az
     axy = ax+ay
     azy = ay+az
@@ -68,8 +60,6 @@ def ZEM_ZEV_Controller(body, s, sd, time):
     anglez = 0.0
     angley = 0.5*np.pi - np.arctan2(acmd[2],acmd[0])
     anglex = -0.5*np.pi + np.arctan2(axz_mag,acmd[1])
-    # print('angley: ',angley)
-    # print('anglex: ',anglex)
     p_cmd = EulerAng2p(anglex, angley, anglez)
     return Fguide, p_cmd #, ZEM, ZEV, acmd, tgo
 
@@ -97,25 +87,6 @@ def RCSMix(Tcontrol):
     return Frcs
 
 def tgoEstimator(time, z_0, zd_0): 
-    # c4 = np.matmul(np.transpose(gravVec),gravVec) 
-    # c3 = 0.0
-    # c2 = -4.0*np.matmul(np.transpose(sd), sd)
-    # c1 = -24.0*np.matmul(np.transpose(s), sd)  
-    # c0 = -36.0*np.matmul(np.transpose(s),s)
-    # print('c0:', c0)
-    # f = lambda t: c4[0,0]*t**4 + c2[0,0]*t**2 + c1[0,0]*t + c0[0,0]
-    # tgo2 = fsolve(f, [-100.0, -50.0, 50.0, 100.0]) 
-    # tgo = 0.0
-    # for tgos in tgo2: 
-    #     if tgos>0.0: 
-    #         tgo = tgos
-    #         break
-    # print('tgo2: ', tgo2)
- 
-    # tmax = -3*z_0/zd_0
-    # print('tmax:', tmax)
-    # if abs(tgo) > tmax:
-    #     tgo = tmax
 
     if z_0 < solver.rf[2] :
         tgo = (-zd_0 + np.sqrt(zd_0**2 - 4*0.5*solver.g*z_0))/(2*0.5*solver.g)
@@ -131,10 +102,6 @@ def tgoEstimator(time, z_0, zd_0):
         elif abs(tgo) < 0.1:
             tgo = 0.1
 
-    # tfinal = 15.0
-    # tgo = tfinal - time
-    # if tgo < 0.1 :
-    #     tgo = 0.1
     return tgo
 
 def limitEngine(Fguide, acmd,z_0): 

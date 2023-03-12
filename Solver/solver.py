@@ -70,11 +70,6 @@ def solveSys(t,x):
 
     Ft = cntrl.RCSMix(Tcontrol)
 
-    #debug 
-    #Ft = np.matrix([[0.0],[0.0], [0.0],[0.0], [0.0],[0.0]])
-    #T = Tcontrol
-    #debug
-
     nn = 0
     for i in range(5,12):
         forces[i].UpdatePropulsion(bodies[1], thrust[nn,0])
@@ -84,7 +79,6 @@ def solveSys(t,x):
         F = F+frc.force_global
         T = T+frc.torque_body
 
-    #print('Tcntl: ',Tcontrol[1,0], 'Tact: ', T[1,0])
     #_______________________________________________________________________
     #Solve for X DOT: 
     #_______________________________________________________________________
@@ -137,10 +131,10 @@ def solveSys(t,x):
     xdot = np.concatenate((xdot,thrust_dot7), axis = 1)
     #send array back to solver
     xdot = np.array(xdot)
-    #print(thrust_cmd)
-    print("acceleration: ",sdd)
-    print("time: ",t, " sec")
 
+    #print time to the console
+    print("time: ",t, " sec")
+    
     #log data
     #pos
     textFile.write(str(t))

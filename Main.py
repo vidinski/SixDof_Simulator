@@ -39,11 +39,23 @@ solver.FEngineLim = 2000 #1200 # force limit on  main engine thruster
 solver.g = -3.721; # Mars surface acceleration due to gravity 
 solver.spacecraftMass = 100.0 # space craft mass
 solver.LatchTGO = False 
-solver.rf = np.matrix([[0.0], [0.0],[40.0]]) #desired position above target landing zone before landing
+solver.rf = np.matrix([[8.0], [0.0],[40.0]]) #desired position above target landing zone before landing
 solver.vf = np.matrix([[0.0], [0.0],[-0.3]]) #final desired velocity
 solver.holdAcmdZ = 0.001; 
 tf = 25.0 #final time
 rn = 1 #run number
+tauRCS01  = 0.05 
+tauRCS02  = 0.05 
+tauRCS03  = 0.05 
+tauRCS04  = 0.05
+tauRCS05  = 0.05 
+tauRCS06  = 0.05  
+tauEngine = 0.1 
+#initial conditions
+pos0 = np.matrix([[100.0],[5.0],[200.0]])
+vel0 = np.matrix([-20.0, -2.0, -40.0])
+w0 = np.matrix([0.0, 0.0, 0.0])
+quat0 = np.matrix([[0.965926],[0.0],[0.258819],[0.0]])
 
 ###########################################################################################
 					#TAKE INPUTS
@@ -52,11 +64,66 @@ rn = 1 #run number
 parser = argparse.ArgumentParser()
 parser.add_argument("--finalTime", help=" final time", type=float)
 parser.add_argument("--run", help="run number", type=int)
+parser.add_argument("--tauRCS01", help=" rcs Time Constant 1", type=float)
+parser.add_argument("--tauRCS02", help=" rcs Time Constant 2", type=float)
+parser.add_argument("--tauRCS03", help=" rcs Time Constant 3", type=float)
+parser.add_argument("--tauRCS04", help=" rcs Time Constant 4", type=float)
+parser.add_argument("--tauRCS05", help=" rcs Time Constant 5", type=float)
+parser.add_argument("--tauRCS06", help=" rcs Time Constant 6", type=float)
+parser.add_argument("--tauEngine", help=" Engine Time Constant", type=float)
+parser.add_argument("--spacecraftMass", help=" Spacecraft mass", type=float)
+parser.add_argument("--pos0x", help=" Position x", type=float)
+parser.add_argument("--pos0y", help=" Position y", type=float)
+parser.add_argument("--pos0z", help=" Position z", type=float)
+parser.add_argument("--w0x", help=" Angular rate x", type=float)
+parser.add_argument("--w0y", help=" Angular rate y", type=float)
+parser.add_argument("--w0z", help=" Angular rate z", type=float)
+parser.add_argument("--quat00", help=" quaternion[0]", type=float)
+parser.add_argument("--quat01", help=" quaternion[1]", type=float)
+parser.add_argument("--quat02", help=" quaternion[2]", type=float)
+parser.add_argument("--quat03", help=" quaternion[3]", type=float)
+
 args = parser.parse_args()
 if args.finalTime:
     tf = args.finalTime
 if args.run:
     rn = args.run
+if args.tauRCS01:
+    tauRCS01 = args.tauRCS01
+if args.tauRCS02:
+    tauRCS02 = args.tauRCS02
+if args.tauRCS03:
+    tauRCS03 = args.tauRCS03
+if args.tauRCS04:
+    tauRCS04 = args.tauRCS04
+if args.tauRCS05:
+    tauRCS05 = args.tauRCS05
+if args.tauRCS06:
+    tauRCS06 = args.tauRCS06
+if args.tauEngine:
+    tauEngine = args.tauEngine
+if args.spacecraftMass:
+    solver.spacecraftMass = args.spacecraftMass
+if args.pos0x:
+    pos0[0] = args.pos0x
+if args.pos0y:
+    pos0[1] = args.pos0y
+if args.pos0z:
+    pos0[2] = args.pos0z
+if args.w0x: 
+    w0[0] = args.w0x
+if args.w0y: 
+    w0[1] = args.w0y
+if args.w0z: 
+    w0[2] = args.w0z
+if args.quat00: 
+    quat0[0] = args.quat00
+if args.quat01:
+    quat0[1] = args.quat01
+if args.quat02:
+    quat0[2] = args.quat02
+if args.quat03:
+    quat0[3] = args.quat03
 
 ###########################################################################################
 					#SETUP VARIABLES
@@ -106,9 +173,8 @@ body1 = body_coordinates(0, #index
                                  [1.2,19,1.5],
                                  [0.5,1.5,25]]))#100.0*np.eye(3,3)) #inertia xx,yy,zz,xy,xz,yz 
 
-vel0 = np.matrix([-20.0, 0.0, -40.0])
-w0 = np.matrix([0.0, 0.0, 0.0])
-body1.BC_trans(np.matrix([[100.0],[0.0],[200.0]]),np.matrix([[0.965926],[0.0],[0.258819],[0.0]]))
+
+body1.BC_trans(pos0,quat0)
 #body1.BC_trans(np.matrix([[50.0],[50.0],[100.0]]),np.matrix([[1.0],[0.0],[0.0],[0.0]]))
 solver.bodies.append(body1)
 
@@ -174,9 +240,8 @@ solver.forces.append(force4)
 index = index + 1
 engine_loc_body = np.matrix([[0.5],[0.0],[0.0]])
 u_thrust = np.matrix([[0.0],[0.0],[1.0]])
-tau_thrust = 0.05
 forceLim = solver.FrcsLim
-force5 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust, forceLim)
+force5 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tauRCS01, forceLim)
 solver.forces.append(force5)
 
 #rcs 2
@@ -184,7 +249,7 @@ index = index + 1
 engine_loc_body = np.matrix([[0.0],[0.5],[0.0]])
 u_thrust = np.matrix([[0.0],[0.0],[1.0]])
 forceLim = solver.FrcsLim
-force6 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust, forceLim)
+force6 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tauRCS02, forceLim)
 solver.forces.append(force6)
 
 #rcs 3 
@@ -192,7 +257,7 @@ index = index + 1
 engine_loc_body = np.matrix([[-0.5],[0.0],[0.0]])
 u_thrust = np.matrix([[0.0],[0.0],[1.0]])
 forceLim = solver.FrcsLim
-force7 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust, forceLim)
+force7 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tauRCS03, forceLim)
 solver.forces.append(force7)
 
 #rcs 4
@@ -200,7 +265,7 @@ index = index + 1
 engine_loc_body = np.matrix([[0.0],[-0.5],[0.0]])
 u_thrust = np.matrix([[0.0],[0.0],[1.0]])
 forceLim = solver.FrcsLim
-force8 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust, forceLim)
+force8 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tauRCS04, forceLim)
 solver.forces.append(force8)
 
 #rcs 5
@@ -208,7 +273,7 @@ index = index + 1
 engine_loc_body = np.matrix([[0.5],[0.0],[0.0]])
 u_thrust = np.matrix([[0.0],[1.0],[0.0]])
 forceLim = solver.FrcsLim
-force9 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust, forceLim)
+force9 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tauRCS05, forceLim)
 solver.forces.append(force9)
 
 #rcs 6
@@ -216,16 +281,15 @@ index = index + 1
 engine_loc_body = np.matrix([[-0.5],[0.0],[0.0]])
 u_thrust = np.matrix([[0.0],[1.0],[0.0]])
 forceLim = solver.FrcsLim
-force10 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tau_thrust, forceLim)
+force10 = ForcesTypes.PropulsionForce(index, engine_loc_body,u_thrust,tauRCS06, forceLim)
 solver.forces.append(force10)
 
 #Main engine
 index = index + 1
 engine_loc_body =  np.matrix([[0.0],[0.0],[0.0]])
 u_thrust = np.matrix([[0.0],[0.0],[1.0]])
-tau_thrust = 0.1
 forceLim = solver.FEngineLim
-force11 = ForcesTypes.PropulsionForce(index, engine_loc_body, u_thrust, tau_thrust,forceLim)
+force11 = ForcesTypes.PropulsionForce(index, engine_loc_body, u_thrust, tauEngine,forceLim)
 solver.forces.append(force11)
 
 ###########################################################################################
@@ -251,7 +315,7 @@ x0 = np.concatenate((x0,np.zeros([1,7])), axis = 1)
 #x0 = np.concatenate((x0,[[0.0]]), axis = 1)
 
 ###### DATA LOGING #########
-logHead = "TIME\tPOSx\tPOSy\tPOSz\tVELx\tVELy\tVELz\n" #great insult
+logHead = "TIME\tPOSx\tPOSy\tPOSz\tVELx\tVELy\tVELz\tACCx\tACCy\tACCz\tFengine\tCONTACTFLAG\n" #great insult
 # solver.textFile = open('test.txt','w')
 fileName = 'output00' + str(rn)+ '.txt'
 solver.textFile = open(fileName,'w')
@@ -337,15 +401,14 @@ def getPlaneData(frame_number,xx,yy,z):
 def getPointData(frame_number):
     #force1.Update() 
     fp  = np.matrix([[0.0], [0.0],[0.0]]) 
-    # x_anim =  np.transpose(np.matrix(x.y[:,frame_number]))
-    # body1.BC_trans(x_anim[0:3,0],
-    #                 x_anim[3:7,0])
+    x_anim =  np.transpose(np.matrix(x.y[:,frame_number]))
+    body1.BC_trans(x_anim[0:3,0],
+                    x_anim[3:7,0])
     # time_text = ax.text(0.05 + body1.xyz_global_center[0], 
     #                     0.9 + body1.xyz_global_center[1], 
     #                     0.9 + body1.xyz_global_center[2], 
     #                     '', transform=ax.transAxes)
-    # time_text.set_text(time_template % (frame_number*dt))
-    time_text.color = 'white'
+
     return fp
 
 def getLegData(frame_number):
@@ -432,6 +495,10 @@ def animate(frame_number,y,plot):
     ax2.set_xlabel('X')
     ax2.set_ylabel('Y')
     ax2.set_zlabel('Z')
+
+    time_text2 = ax2.text(250, 150, 150, '', transform=ax.transAxes)
+    time_text2.set_text(time_template % (frame_number*dt))
+    time_text2.color = 'white'
     
 
 ###########################################################################################

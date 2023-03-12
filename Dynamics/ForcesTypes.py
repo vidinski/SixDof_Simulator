@@ -56,6 +56,8 @@ class PropulsionForce(ForceBase):
             self.cg_global = body.xyz_global_center  
             self.A = body.A
             self.force_mag = thrust
+            if (thrust > self.forceLim):
+                self.force_mag = self.forceLim
             self.force_body = self.force_mag*self.u_propulsion 
             self.UpdateBasic(body)
 
