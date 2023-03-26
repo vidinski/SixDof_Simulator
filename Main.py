@@ -33,16 +33,17 @@ solver.tnb = 1 #total number of bodies
 solver.attitude_kp = -3000 #-3000 #-3e+4
 solver.attitude_kd = -1000 #-1000  #-1e+3
 solver.K_zem = 1.0
-solver.K_zev = 5.0
+solver.K_zev = 2.0
 solver.FrcsLim = 100 # force limit on rcs
 solver.FEngineLim = 2000 #1200 # force limit on  main engine thruster
 solver.g = -3.721; # Mars surface acceleration due to gravity 
-solver.spacecraftMass = 100.0 # space craft mass
+solver.trueSpacecraftMass = 100.0 # space craft mass
+solver.estSpacecraftMass = 100.0 # space craft mass
 solver.LatchTGO = False 
 solver.rf = np.matrix([[8.0], [0.0],[40.0]]) #desired position above target landing zone before landing
-solver.vf = np.matrix([[0.0], [0.0],[-0.3]]) #final desired velocity
+solver.vf = np.matrix([[0.0], [0.0],[-0.75]]) #final desired velocity
 solver.holdAcmdZ = 0.001; 
-tf = 25.0 #final time
+tf = 20.0 #final time
 rn = 1 #run number
 tauRCS01  = 0.05 
 tauRCS02  = 0.05 
@@ -71,7 +72,7 @@ parser.add_argument("--tauRCS04", help=" rcs Time Constant 4", type=float)
 parser.add_argument("--tauRCS05", help=" rcs Time Constant 5", type=float)
 parser.add_argument("--tauRCS06", help=" rcs Time Constant 6", type=float)
 parser.add_argument("--tauEngine", help=" Engine Time Constant", type=float)
-parser.add_argument("--spacecraftMass", help=" Spacecraft mass", type=float)
+parser.add_argument("--trueSpacecraftMass", help=" Spacecraft mass", type=float)
 parser.add_argument("--pos0x", help=" Position x", type=float)
 parser.add_argument("--pos0y", help=" Position y", type=float)
 parser.add_argument("--pos0z", help=" Position z", type=float)
@@ -102,8 +103,8 @@ if args.tauRCS06:
     tauRCS06 = args.tauRCS06
 if args.tauEngine:
     tauEngine = args.tauEngine
-if args.spacecraftMass:
-    solver.spacecraftMass = args.spacecraftMass
+if args.trueSpacecraftMass:
+    solver.trueSpacecraftMass = args.trueSpacecraftMass
 if args.pos0x:
     pos0[0] = args.pos0x
 if args.pos0y:
@@ -168,7 +169,7 @@ body1 = body_coordinates(0, #index
 			 np.matrix([[0.0],[0.0],[0.0]]), #joints
 			 np.matrix([[0.0],[1.0],[0.0]]), #unit vectors
 			 np.matrix([[1.0],[0.0],[0.0],[0.0]]), #quaternion (first element scalar)
-			 solver.spacecraftMass, #mass
+			 solver.trueSpacecraftMass, #mass
 			 inertia = np.matrix([[10, 1.2,0.5],
                                  [1.2,19,1.5],
                                  [0.5,1.5,25]]))#100.0*np.eye(3,3)) #inertia xx,yy,zz,xy,xz,yz 
@@ -187,7 +188,7 @@ index = -1
 #GRAVITY
 index = index + 1
 force0 = ForcesTypes.GravityForce(0, #index
-                              [[0.0],[0.0],[solver.g*solver.spacecraftMass]]) #force direction, mars gravitational acceleration
+                              [[0.0],[0.0],[solver.g*solver.trueSpacecraftMass]]) #force direction, mars gravitational acceleration
 solver.forces.append(force0)
 
 #CONTACT
@@ -315,7 +316,13 @@ x0 = np.concatenate((x0,np.zeros([1,7])), axis = 1)
 #x0 = np.concatenate((x0,[[0.0]]), axis = 1)
 
 ###### DATA LOGING #########
-logHead = "TIME\tPOSx\tPOSy\tPOSz\tVELx\tVELy\tVELz\tACCx\tACCy\tACCz\tFengine\tCONTACTFLAG\n" #great insult
+logHead = "TIME\tPOSx\tPOSy\tPOSz\tVELx\tVELy\tVELz\tACCx\tACCy\tACCz"
+logHead = logHead + "\tW1\tW2\tW3\tP0\tP1\tP2\tP3\tT1\tT2\tT3\tT4\tT5"
+logHead = logHead + "\tT6\tT7\tC1\tC2\tC3\tC4\tACMD1\tACMD2\tACMD3"
+# 
+logHead = logHead + "\tPCMD0\tPCMD1\tPCMD2\tPCMD3\tZEM1\tZEM2\tZEM3"
+logHead = logHead + "\tZEV1\tZEV2\tZEV3\tTGO"
+logHead = logHead + '\n'
 # solver.textFile = open('test.txt','w')
 fileName = 'output00' + str(rn)+ '.txt'
 solver.textFile = open(fileName,'w')
@@ -345,7 +352,6 @@ xxx, yyy = np.meshgrid((0.0,0.0), (0.0,0.0))
 zz = np.zeros((2,2))
 
 # plot 
-#print(matplotlib.__version__)
 plt.style.use('dark_background')
 time_template = 'time = %.1fs'
 

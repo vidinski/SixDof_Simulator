@@ -31,7 +31,7 @@ def ZEM_ZEV_Controller(body, s, sd, time):
     z_0 = s[2]
     zd_0 = sd[2]
     ZEM = np.matrix([[0.0], [0.0],[0.0]])
-
+    ZEV = np.matrix([[0.0], [0.0],[0.0]])
     tgo = tgoEstimator(time, z_0, zd_0)
 
 
@@ -45,7 +45,7 @@ def ZEM_ZEV_Controller(body, s, sd, time):
         acmd = solver.K_zev * ZEV*2.0/tgo
         solver.holdAcmdZ = acmd[2,0]; 
 
-    Fguide = solver.spacecraftMass*np.linalg.norm(acmd)
+    Fguide = solver.estSpacecraftMass*np.linalg.norm(acmd)
     Fguide, acmd = limitEngine(Fguide, acmd,z_0)
 
     ax = np.matmul(np.matrix([[1.0, 0.0, 0.0]]),acmd)
@@ -61,7 +61,7 @@ def ZEM_ZEV_Controller(body, s, sd, time):
     angley = 0.5*np.pi - np.arctan2(acmd[2],acmd[0])
     anglex = -0.5*np.pi + np.arctan2(axz_mag,acmd[1])
     p_cmd = EulerAng2p(anglex, angley, anglez)
-    return Fguide, p_cmd #, ZEM, ZEV, acmd, tgo
+    return Fguide, p_cmd, ZEM, ZEV, acmd, tgo
 
 def RCSMix(Tcontrol): 
     flim = solver.FrcsLim; 
@@ -108,13 +108,13 @@ def limitEngine(Fguide, acmd,z_0):
         gravVec = np.matrix([[0.0], [0.0],[solver.g]])
         # if (np.linalg.norm(acmd) < abs(solver.g)): #or (zd_0 > -0.3):
         if (np.linalg.norm(acmd) < 0.0):
-            # Fguide = -solver.spacecraftMass*solver.g
+            # Fguide = -solver.estSpacecraftMass*solver.g
             # acmd = -gravVec
             acmd = np.matrix([[0.0],[0.0],[1.0]])
             pass
         if(np.linalg.norm(Fguide) > solver.FEngineLim): 
             Fguide = solver.FEngineLim
-            acmd = Fguide/solver.spacecraftMass*1/np.linalg.norm(acmd)*acmd
+            acmd = Fguide/solver.estSpacecraftMass*1/np.linalg.norm(acmd)*acmd
         if(z_0 < 1.0): 
             Fguide = 0.0
             acmd = np.matrix([[0.0],[0.0],[1.0]])

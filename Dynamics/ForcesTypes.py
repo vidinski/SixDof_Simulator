@@ -25,6 +25,7 @@ class ContactForce(ForceBase):
             self.u_ground = u_ground 
             self.spring_constant = spring_constant
             self.damping = damping
+            self.force_mag = 0.0
         def UpdateContact(self, body, vel_body_global,w):
             self.vel_body_global = vel_body_global
             self.cg_global = body.xyz_global_center

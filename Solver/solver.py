@@ -18,7 +18,8 @@ global lx
 global FrcsLim
 global FEngineLim
 global g 
-global spacecraftMass
+global trueSpacecraftMass
+global estSpacecraftMass
 global textFile
 global holdAcmdZ
 global vf
@@ -60,7 +61,7 @@ def solveSys(t,x):
         forces[i].UpdateContact(bodies[1], sd, w)
 
     # get controller values: 
-    Fguide, p_cmd = cntrl.ZEM_ZEV_Controller(bodies[1], s, sd, t) 
+    Fguide, p_cmd, ZEM, ZEV, acmd, tgo = cntrl.ZEM_ZEV_Controller(bodies[1], s, sd, t) 
     wr = np.matrix([[0.0],[0.0],[0.0]]);  
     Tcontrol = cntrl.AttitudeController(wr,p_cmd,w,p,
                             bodies[1].inertia, 
@@ -134,7 +135,7 @@ def solveSys(t,x):
 
     #print time to the console
     print("time: ",t, " sec")
-    
+
     #log data
     #pos
     textFile.write(str(t))
@@ -143,8 +144,43 @@ def solveSys(t,x):
     textFile.write('\t')
     #vel
     LogData.writeToFile(np.transpose(sd))
-    textFile.write('\n')
-
+    textFile.write('\t')
+    #accel
+    LogData.writeToFile(np.transpose(sdd))
+    textFile.write('\t')
+    # omega
+    LogData.writeToFile(np.transpose(w))
+    textFile.write('\t')    
+    # attitude
+    LogData.writeToFile(np.transpose(p))
+    textFile.write('\t')
+    # RCS & Main Engine Force magnitude
+    LogData.writeToFile(np.transpose(thrust))
+    textFile.write('\t')
+    # Contact force
+    textFile.write(str(forces[1].force_mag))
+    textFile.write('\t')
+    # Contact force
+    textFile.write(str(forces[2].force_mag))
+    textFile.write('\t')
+    # Contact force
+    textFile.write(str(forces[3].force_mag))
+    textFile.write('\t')
+    # Contact force
+    textFile.write(str(forces[4].force_mag))
+    textFile.write('\t')
+    #commands
+    LogData.writeToFile(np.transpose(acmd))
+    textFile.write('\t')   
+    LogData.writeToFile(np.transpose(p_cmd))
+    textFile.write('\t')  
+    LogData.writeToFile(np.transpose(ZEM))
+    textFile.write('\t') 
+    LogData.writeToFile(np.transpose(ZEV))
+    textFile.write('\t')     
+    textFile.write(str(tgo))
+    textFile.write('\n')   
+    
     return xdot[0]
   
 
