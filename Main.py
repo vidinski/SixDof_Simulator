@@ -338,8 +338,8 @@ solver.textFile.close()
 ###########################################################################################
 
 # Set up formatting for the movie files
-Writer = animation.writers['ffmpeg']
-writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
+# Writer = animation.writers['ffmpeg']
+# writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
 
 N = 4 # Meshsize
 fps = 100 # frame per sec
@@ -360,9 +360,9 @@ ax = fig.add_subplot(121, projection='3d')
 ax.set_xlim3d(-2, 2)
 ax.set_ylim3d(-2, 2)
 ax.set_zlim3d(-2, 2)
-ax.w_xaxis.set_pane_color((0.0, 0.0, 0.0, 1.0))
-ax.w_yaxis.set_pane_color((0.0, 0.0, 0.0, 1.0))
-ax.w_zaxis.set_pane_color((0.0, 0.0, 0.0, 1.0))
+ax.xaxis.set_pane_color((0.0, 0.0, 0.0, 1.0))
+ax.yaxis.set_pane_color((0.0, 0.0, 0.0, 1.0))
+ax.zaxis.set_pane_color((0.0, 0.0, 0.0, 1.0))
 ax.grid(b='on')
 time_text = ax.text(0.05, 0.9, 0.9, '', transform=ax.transAxes)
 plt.xlabel('X')
@@ -374,9 +374,9 @@ ax2 = fig.add_subplot(122, projection='3d')
 ax2.set_xlim3d(-2, 2)
 ax2.set_ylim3d(-2, 2)
 ax2.set_zlim3d(-2, 2)
-ax2.w_xaxis.set_pane_color((0.1, 0.0, 0.0, 1.0))
-ax2.w_yaxis.set_pane_color((0.1, 0.0, 0.0, 1.0))
-ax2.w_zaxis.set_pane_color((0.1, 0.0, 0.0, 1.0))
+ax2.xaxis.set_pane_color((0.1, 0.0, 0.0, 1.0))
+ax2.yaxis.set_pane_color((0.1, 0.0, 0.0, 1.0))
+ax2.zaxis.set_pane_color((0.1, 0.0, 0.0, 1.0))
 ax2.grid(b='on')
 time_text2 = ax2.text(0.05, 0.9, 0.9, '', transform=ax.transAxes)
 plt.xlabel('X')
